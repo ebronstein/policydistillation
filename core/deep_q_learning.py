@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import time
 
-from q_learning import QN
+from core.q_learning import QN
 
 
 class DQN(QN):
