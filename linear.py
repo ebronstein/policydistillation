@@ -1,10 +1,11 @@
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
 
-from utils.general import get_logger
-from utils.test_env import EnvTest
 from core.deep_q_learning import DQN
 from schedule import LinearExploration, LinearSchedule
+from utils.dqn_utils import huber_loss
+from utils.general import get_logger
+from utils.test_env import EnvTest
 
 class Linear(DQN):
     """
@@ -103,11 +104,11 @@ class Linear(DQN):
         """
         num_actions = self.env.action_space.n
 
-        not_done_mask = tf.abs(tf.cast(self.done_mask, tf.float32) - 1)
-        q_samp = self.r + self.config.gamma * not_done_mask * tf.reduce_max(target_q, axis=1)
-        a_indices = tf.one_hot(self.a, num_actions)
+        not_done_mask = tf.abs(1 - tf.cast(self.done_mask, tf.float32))
+        q_samp = self.r + not_done_mask * self.config.gamma * tf.reduce_max(target_q, axis=1)
+        a_indices = tf.one_hot(self.a, depth=num_actions)
         q_sa = tf.reduce_sum(q * a_indices, axis=1)
-        self.loss = tf.reduce_mean(tf.square(q_samp - q_sa))
+        self.loss = tf.reduce_mean(huber_loss(q_samp - q_sa))
 
 
     def add_optimizer_op(self, scope):
