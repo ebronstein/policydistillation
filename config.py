@@ -155,6 +155,7 @@ class Pong_v0_config_teacher():
     soft_epsilon      = 0.05
 
     # nature paper hyper params
+    q_values_model = 'nature_cnn'
     nsteps_train       = 5000000
     batch_size         = 32
     buffer_size        = 1000000
