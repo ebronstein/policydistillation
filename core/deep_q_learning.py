@@ -1,4 +1,5 @@
 import os
+import pdb
 import numpy as np
 import tensorflow as tf
 import time
@@ -88,7 +89,7 @@ class DQN(QN):
         # add square loss
         self.add_loss_op(self.q, self.target_q)
 
-        # add optmizer for the main networks
+        # add optimizer for the main networks
         self.add_optimizer_op("q%d" % student)
 
 

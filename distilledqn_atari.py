@@ -1,3 +1,5 @@
+import argparse
+
 import gym
 from utils.preprocess import greyscale
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
@@ -24,6 +26,22 @@ address-ip-of-the-server:6006
 6006 is the default port used by tensorboard.
 """
 if __name__ == '__main__':
+    # parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('env_name', type=str, help='Environment.')
+    parser.add_argument('exp_name', type=str, help='Experiment name.')
+    parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
+    parser.add_argument('-tc', '--teacher_checkpoint_dir', type=str, 
+            help='Path to teacher checkpoint file.')
+    args = parser.parse_args()
+
+    # set config variables
+    config.env_name = args.env_name
+    config.output_path = 'results/{0}/student'.format(args.env_name)
+    config.student = True
+    config.teacher_checkpoint_dir = args.teacher_checkpoint_dir
+    config.state_history = args.state_history
+
     # make env
     env = gym.make(config.env_name)
     env = MaxAndSkipEnv(env, skip=config.skip_frame)

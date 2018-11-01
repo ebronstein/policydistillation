@@ -13,7 +13,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-CKPT_DIR = 'results/atari/teacher/model.weights/'
+# CKPT_DIR = 'results/atari/teacher/model.weights/'
 
 def initialize_teacher(session, model, train_dir, seed=42):
     tf.set_random_seed(seed)
@@ -25,7 +25,8 @@ class DistilledQN(NatureQN):
     def __init__(self, env, config, logger=None, student=True):
         teachermodel = NatureQN(env, config)
         teachermodel.initialize_basic()
-        initialize_teacher(teachermodel.sess, teachermodel, CKPT_DIR)
+        initialize_teacher(teachermodel.sess, teachermodel, 
+                           config.teacher_checkpoint_dir)
         self.teachermodel = teachermodel
         super(DistilledQN, self).__init__(
             env, config, logger=logger, student=student)

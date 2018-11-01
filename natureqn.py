@@ -3,12 +3,14 @@ import pdb
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
 
+from utils.dqn_utils import build_mlp
 from utils.general import get_logger
 from utils.test_env import EnvTest
 from schedule import LinearExploration, LinearSchedule
 from linear import Linear
 
 from config import testconfig_teacher as config
+
 
 class NatureQN(Linear):
     """
@@ -36,19 +38,24 @@ class NatureQN(Linear):
         # compress the student network
         size1, size2, size3, size4 = (16, 16, 16, 128) if self.student else (32, 64, 64, 512)
 
-        # Berkeley Deep RL implementation
-        with tf.variable_scope(scope, reuse=reuse):
-            with tf.variable_scope("convnet"):
-                # original architecture
-                out = layers.convolution2d(out, num_outputs=size1, kernel_size=8, stride=4, activation_fn=tf.nn.relu)
-                out = layers.convolution2d(out, num_outputs=size2, kernel_size=4, stride=2, activation_fn=tf.nn.relu)
-                out = layers.convolution2d(out, num_outputs=size3, kernel_size=3, stride=1, activation_fn=tf.nn.relu)
-            out = layers.flatten(out)
-            with tf.variable_scope("action_value"):
-                out = layers.fully_connected(out, num_outputs=size4,         activation_fn=tf.nn.relu)
-                out = layers.fully_connected(out, num_outputs=num_actions, activation_fn=None)
+        # TODO:
+        n_layers = 3
+        size = 64
+        return build_mlp(out, num_actions, scope, n_layers, size)
 
-            return out
+        # Berkeley Deep RL implementation
+        # with tf.variable_scope(scope, reuse=reuse):
+        #     with tf.variable_scope("convnet"):
+        #         # original architecture
+        #         out = layers.convolution2d(out, num_outputs=size1, kernel_size=8, stride=4, activation_fn=tf.nn.relu)
+        #         out = layers.convolution2d(out, num_outputs=size2, kernel_size=4, stride=2, activation_fn=tf.nn.relu)
+        #         out = layers.convolution2d(out, num_outputs=size3, kernel_size=3, stride=1, activation_fn=tf.nn.relu)
+        #     out = layers.flatten(out)
+        #     with tf.variable_scope("action_value"):
+        #         out = layers.fully_connected(out, num_outputs=size4,         activation_fn=tf.nn.relu)
+        #         out = layers.fully_connected(out, num_outputs=num_actions, activation_fn=None)
+
+        #     return out
 
         # original implementation
         # with tf.variable_scope(scope, reuse=reuse):

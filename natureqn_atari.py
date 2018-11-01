@@ -1,5 +1,8 @@
+import argparse
+import pdb
+
 import gym
-from utils.preprocess import greyscale
+from utils.preprocess import greyscale, blackandwhite
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
 from schedule import LinearExploration, LinearSchedule
@@ -24,11 +27,28 @@ address-ip-of-the-server:6006
 6006 is the default port used by tensorboard.
 """
 if __name__ == '__main__':
+    # parse arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('env_name', type=str, help='Environment.')
+    parser.add_argument('exp_name', type=str, help='Experiment name.')
+    parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
+    parser.add_argument('-pp', '--preprocess', type=str, default=None,
+            choices=[None, 'greyscale', 'blackandwhite'], 
+            help='Preprocessing function.')
+    args = parser.parse_args()
+
+    # set config variables
+    config.env_name = args.env_name
+    config.output_path = 'results/{0}/teacher'.format(args.exp_name)
+    config.student = False
+    config.state_history = args.state_history
+
     # make env
     env = gym.make(config.env_name)
     env = MaxAndSkipEnv(env, skip=config.skip_frame)
-    env = PreproWrapper(env, prepro=greyscale, shape=(80, 80, 1), 
-                        overwrite_render=config.overwrite_render)
+    if args.preprocess is not None:
+        env = PreproWrapper(env, prepro=eval(args.preprocess), shape=(80, 80, 1), 
+                            overwrite_render=config.overwrite_render)
 
     # exploration strategy
     exp_schedule = LinearExploration(env, config.eps_begin, 

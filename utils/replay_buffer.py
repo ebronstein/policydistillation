@@ -1,5 +1,7 @@
-import numpy as np
+import pdb
 import random
+
+import numpy as np
 
 def sample_n_unique(sampling_f, n):
     """Helper function. Given a function `sampling_f` that returns
@@ -137,11 +139,18 @@ class ReplayBuffer(object):
             frames = [np.zeros_like(self.obs[0]) for _ in range(missing_context)]
             for idx in range(start_idx, end_idx):
                 frames.append(self.obs[idx % self.size])
-            return np.concatenate(frames, 2)
+            # allow for generic observation shape
+            if len(frames[0].shape) == 1: # 1D vectors
+                return np.vstack(frames)
+            else: # concatenate along final dimension
+                return np.concatenate(frames, len(frames[0].shape) - 1)
         else:
-            # this optimization has potential to saves about 30% compute time \o/
-            img_h, img_w = self.obs.shape[1], self.obs.shape[2]
-            return self.obs[start_idx:end_idx].transpose(1, 2, 0, 3).reshape(img_h, img_w, -1)
+            if len(self.obs.shape) <= 2:
+                return self.obs[start_idx:end_idx].reshape(self.obs.shape[-1])
+            else:
+                # this optimization has potential to saves about 30% compute time \o/
+                img_h, img_w = self.obs.shape[1], self.obs.shape[2]
+                return self.obs[start_idx:end_idx].transpose(1, 2, 0, 3).reshape(img_h, img_w, -1)
 
     def store_frame(self, frame):
         """Store a single frame in the buffer at the next available index, overwriting

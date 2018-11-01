@@ -78,7 +78,7 @@ class PreproWrapper(gym.Wrapper):
 
     def _render(self, mode='human', close=False):
         """
-        Overwrite _render function to vizualize preprocessing
+        Overwrite _render function to visualize preprocessing
         """
 
         if self.overwrite_render:

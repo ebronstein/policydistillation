@@ -1,3 +1,5 @@
+import pdb
+
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
 
@@ -19,19 +21,23 @@ class Linear(DQN):
         data during training.  Note that when "None" is in a placeholder's shape, it's flexible
         (so we can use different batch sizes without rebuilding the model
         """
+        
         # this information might be useful
         # here, typically, a state shape is (80, 80, 1)
         state_shape = list(self.env.observation_space.shape)
         num_actions = self.env.action_space.n
 
+        state_ph_shape = [None] + state_shape
+        if len(state_shape) == 3:
+            state_ph_shape[-1] *= self.config.state_history
         self.s = tf.placeholder(tf.uint8, 
-            shape=(None, state_shape[0], state_shape[1], state_shape[2] * self.config.state_history))
+            shape=state_ph_shape)
         self.a = tf.placeholder(tf.int32,
             shape=(None))
         self.r = tf.placeholder(tf.float32,
             shape=(None))
         self.sp = tf.placeholder(tf.uint8,
-            shape=(None, state_shape[0], state_shape[1], state_shape[2] * self.config.state_history))
+            shape=state_ph_shape)
         self.done_mask = tf.placeholder(tf.bool,
             shape=(None))
         self.lr = tf.placeholder(tf.float32)
