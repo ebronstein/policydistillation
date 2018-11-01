@@ -5,7 +5,8 @@ import tensorflow as tf
 import numpy as np
 import random
 
-def build_mlp(input_placeholder, output_size, scope, n_layers, size, activation=tf.tanh, output_activation=None):
+def build_mlp(input_placeholder, output_size, scope, n_layers, size, 
+              activation=tf.tanh, output_activation=None, reuse=False):
     """
         Builds a feedforward neural network
         
@@ -24,7 +25,7 @@ def build_mlp(input_placeholder, output_size, scope, n_layers, size, activation=
         Hint: use tf.layers.dense    
     """
     # YOUR HW2 CODE HERE
-    with tf.variable_scope(scope):
+    with tf.variable_scope(scope, reuse=reuse):
         layers = [input_placeholder]
         for i in range(n_layers):
             layers.append(tf.layers.dense(layers[-1], size, activation=activation))

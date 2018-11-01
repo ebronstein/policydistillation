@@ -41,7 +41,7 @@ class NatureQN(Linear):
         # TODO:
         n_layers = 3
         size = 64
-        return build_mlp(out, num_actions, scope, n_layers, size)
+        return build_mlp(out, num_actions, scope, n_layers, size, reuse=reuse)
 
         # Berkeley Deep RL implementation
         # with tf.variable_scope(scope, reuse=reuse):
