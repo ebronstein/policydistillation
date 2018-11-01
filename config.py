@@ -92,6 +92,9 @@ class atariconfig_teacher():
     plot_output  = output_path + "scores.png"
     record_path  = output_path + "monitor/"
 
+    # student/teacher config
+    student = False
+
     # model and training config
     num_episodes_test = 50
     grad_clip         = True
@@ -134,6 +137,10 @@ class atariconfig_student():
     log_path     = output_path + "log.txt"
     plot_output  = output_path + "scores.png"
     record_path  = output_path + "monitor/"
+
+    # student/teacher config
+    student = True
+    teacher_checkpoint_dir = "results/atari/teacher/model.weights"
 
     # model and training config
     num_episodes_test = 50
