@@ -52,8 +52,6 @@ if __name__ == '__main__':
     teacher_config.student = False
     # teacher_config.state_history = args.state_history
 
-    pdb.set_trace()
-
     # make env
     env = gym.make(teacher_config.env_name)
     if hasattr(teacher_config, 'skip_frame'):

@@ -105,7 +105,11 @@ class CartPole_v0_config_teacher():
     record_freq       = 250000
     soft_epsilon      = 0.05
 
-    # nature paper hyper params
+    # hyper params
+    q_values_model = 'feedforward_nn'
+    n_layers = 2
+    nn_size = 24
+    nn_activation = 'relu'
     nsteps_train       = 5000000
     batch_size         = 20
     buffer_size        = 1000000
