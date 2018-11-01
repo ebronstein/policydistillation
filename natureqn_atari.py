@@ -1,5 +1,6 @@
 import argparse
 import pdb
+import time
 
 import gym
 from utils.preprocess import greyscale, blackandwhite
@@ -8,7 +9,7 @@ from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 from schedule import LinearExploration, LinearSchedule
 from natureqn import NatureQN
 
-from config import atariconfig_teacher as config
+import config
 
 """
 Use deep Q network for the Atari game. Please report the final result.
@@ -31,33 +32,44 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
-    parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
+    # parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
     parser.add_argument('-pp', '--preprocess', type=str, default=None,
             choices=[None, 'greyscale', 'blackandwhite'], 
             help='Preprocessing function.')
     args = parser.parse_args()
 
+    # get config
+    teacher_config = eval('config.{0}_config_teacher'.format(
+            args.env_name.replace('-', '_')))
     # set config variables
-    config.env_name = args.env_name
-    config.output_path = 'results/{0}/teacher'.format(args.exp_name)
-    config.student = False
-    config.state_history = args.state_history
+    teacher_config.env_name = args.env_name
+    teacher_config.output_path = 'results/{0}_{1}/teacher'.format(
+                args.exp_name, time.strftime('%Y-%m-%d-%H-%M-%S'))
+    teacher_config.model_output = teacher_config.output_path + "model.weights/"
+    teacher_config.log_path     = teacher_config.output_path + "log.txt"
+    teacher_config.plot_output  = teacher_config.output_path + "scores.png"
+    teacher_config.record_path  = teacher_config.output_path + "monitor/"
+    teacher_config.student = False
+    # teacher_config.state_history = args.state_history
+
+    pdb.set_trace()
 
     # make env
-    env = gym.make(config.env_name)
-    env = MaxAndSkipEnv(env, skip=config.skip_frame)
+    env = gym.make(teacher_config.env_name)
+    if hasattr(teacher_config, 'skip_frame'):
+        env = MaxAndSkipEnv(env, skip=teacher_config.skip_frame)
     if args.preprocess is not None:
         env = PreproWrapper(env, prepro=eval(args.preprocess), shape=(80, 80, 1), 
-                            overwrite_render=config.overwrite_render)
+                            overwrite_render=teacher_config.overwrite_render)
 
     # exploration strategy
-    exp_schedule = LinearExploration(env, config.eps_begin, 
-            config.eps_end, config.eps_nsteps)
+    exp_schedule = LinearExploration(env, teacher_config.eps_begin, 
+            teacher_config.eps_end, teacher_config.eps_nsteps)
 
     # learning rate schedule
-    lr_schedule  = LinearSchedule(config.lr_begin, config.lr_end,
-            config.lr_nsteps)
+    lr_schedule  = LinearSchedule(teacher_config.lr_begin, teacher_config.lr_end,
+            teacher_config.lr_nsteps)
 
     # train model
-    model = NatureQN(env, config)
+    model = NatureQN(env, teacher_config)
     model.run(exp_schedule, lr_schedule)

@@ -39,8 +39,8 @@ class NatureQN(Linear):
         size1, size2, size3, size4 = (16, 16, 16, 128) if self.student else (32, 64, 64, 512)
 
         # TODO:
-        n_layers = 3
-        size = 64
+        n_layers = 2
+        size = 24
         return build_mlp(out, num_actions, scope, n_layers, size, reuse=reuse)
 
         # Berkeley Deep RL implementation
