@@ -27,8 +27,6 @@ class QN(object):
             config: class with hyperparameters
             logger: logger instance from logging module
         """
-        pdb.set_trace()
-        
         # directory for training outputs
         if not os.path.exists(config.output_path):
             os.makedirs(config.output_path)

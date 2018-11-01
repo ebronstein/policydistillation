@@ -68,10 +68,11 @@ class NatureQN(Linear):
         Returns:
             out: (tf tensor) of shape = (batch_size, num_actions)
         """
-        pdb.set_trace()
         if self.config.q_values_model == 'feedforward_nn':
+            print('Using feedforward NN for Q-values.')
             return self.feedforward_nn(state, scope, reuse)
         elif self.config.q_values_model == 'nature_cnn':
+            print('Using Nature (DeepMind) CNN for Q-values.')
             return self.nature_cnn(state, scope, reuse)
         else:
             print('ERROR: Invalid Q-value model type.')
