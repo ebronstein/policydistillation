@@ -33,9 +33,9 @@ if __name__ == '__main__':
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
     # parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
-    parser.add_argument('-pp', '--preprocess', type=str, default=None,
-            choices=[None, 'greyscale', 'blackandwhite'], 
-            help='Preprocessing function.')
+    # parser.add_argument('-pp', '--preprocess', type=str, default=None,
+    #         choices=[None, 'greyscale', 'blackandwhite'], 
+    #         help='Preprocessing function.')
     args = parser.parse_args()
 
     # get config
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             args.env_name.replace('-', '_')))
     # set config variables
     teacher_config.env_name = args.env_name
-    teacher_config.output_path = 'results/{0}_{1}/teacher'.format(
+    teacher_config.output_path = 'results/{0}_{1}/teacher/'.format(
                 args.exp_name, time.strftime('%Y-%m-%d-%H-%M-%S'))
     teacher_config.model_output = teacher_config.output_path + "model.weights/"
     teacher_config.log_path     = teacher_config.output_path + "log.txt"
@@ -56,8 +56,8 @@ if __name__ == '__main__':
     env = gym.make(teacher_config.env_name)
     if hasattr(teacher_config, 'skip_frame'):
         env = MaxAndSkipEnv(env, skip=teacher_config.skip_frame)
-    if args.preprocess is not None:
-        env = PreproWrapper(env, prepro=eval(args.preprocess), shape=(80, 80, 1), 
+    if hasattr(teacher_config, 'preprocess_state') and teacher_config.preprocess_state is not None:
+        env = PreproWrapper(env, prepro=eval(teacher_config.preprocess_state), shape=(80, 80, 1), 
                             overwrite_render=teacher_config.overwrite_render)
 
     # exploration strategy

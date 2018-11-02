@@ -106,10 +106,11 @@ class CartPole_v0_config_teacher():
     soft_epsilon      = 0.05
 
     # hyper params
-    q_values_model = 'feedforward_nn'
-    n_layers = 2
-    nn_size = 24
-    nn_activation = 'relu'
+    q_values_model     = 'feedforward_nn'
+    double_q           = True
+    n_layers           = 2
+    nn_size            = 24
+    nn_activation      = 'relu'
     nsteps_train       = 5000000
     batch_size         = 20
     buffer_size        = 1000000
@@ -144,6 +145,9 @@ class Pong_v0_config_teacher():
     # student/teacher config
     student = False
 
+    # processing
+    preprocess_state = 'blackandwhite'
+
     # model and training config
     num_episodes_test = 50
     grad_clip         = True
@@ -156,6 +160,7 @@ class Pong_v0_config_teacher():
 
     # nature paper hyper params
     q_values_model = 'nature_cnn'
+    double_q           = False
     nsteps_train       = 5000000
     batch_size         = 32
     buffer_size        = 1000000
@@ -164,7 +169,7 @@ class Pong_v0_config_teacher():
     learning_freq      = 4
     state_history      = 4
     skip_frame         = 4
-    lr_begin           = 0.00025
+    lr_begin           = 0.0001 # original implementation: 0.00025, Berkeley implementation: 1e-4
     lr_end             = 0.00005
     lr_nsteps          = nsteps_train/2
     eps_begin          = 1
@@ -203,6 +208,8 @@ class atariconfig_student():
     soft_epsilon      = 0.05
 
     # nature paper hyper params
+    q_values_model     = 'nature_cnn'
+    double_q           = False
     nsteps_train       = 5000000
     batch_size         = 32
     buffer_size        = 1000000

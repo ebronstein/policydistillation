@@ -21,7 +21,7 @@ class Linear(DQN):
         data during training.  Note that when "None" is in a placeholder's shape, it's flexible
         (so we can use different batch sizes without rebuilding the model
         """
-        
+
         # this information might be useful
         # here, typically, a state shape is (80, 80, 1)
         state_shape = list(self.env.observation_space.shape)
@@ -111,7 +111,17 @@ class Linear(DQN):
         num_actions = self.env.action_space.n
 
         not_done_mask = tf.abs(1 - tf.cast(self.done_mask, tf.float32))
-        q_samp = self.r + not_done_mask * self.config.gamma * tf.reduce_max(target_q, axis=1)
+
+        # Bellman error
+        if self.config.double_q:
+          best_actions = tf.argmax(self.q, axis=1)
+          target_q_one_hot = tf.one_hot(best_actions, depth=num_actions)
+          best_target_q = tf.reduce_sum(target_q * target_q_one_hot, axis=1)
+        else:
+          # Get max of target Q values along the columns (i.e. actions)
+          best_target_q = tf.reduce_max(target_q, axis=1)
+        
+        q_samp = self.r + not_done_mask * self.config.gamma * best_target_q
         a_indices = tf.one_hot(self.a, depth=num_actions)
         q_sa = tf.reduce_sum(q * a_indices, axis=1)
         self.loss = tf.reduce_mean(huber_loss(q_samp - q_sa))
