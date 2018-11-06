@@ -32,15 +32,15 @@ class NatureQN(Linear):
 
         # Berkeley Deep RL implementation
         with tf.variable_scope(scope, reuse=reuse):
-            with tf.variable_scope("convnet"):
+            # with tf.variable_scope("convnet"):
                 # original architecture
-                out = layers.convolution2d(out, num_outputs=size1, kernel_size=8, stride=4, activation_fn=tf.nn.relu)
-                out = layers.convolution2d(out, num_outputs=size2, kernel_size=4, stride=2, activation_fn=tf.nn.relu)
-                out = layers.convolution2d(out, num_outputs=size3, kernel_size=3, stride=1, activation_fn=tf.nn.relu)
+            out = layers.convolution2d(out, num_outputs=size1, kernel_size=8, stride=4, activation_fn=tf.nn.relu)
+            out = layers.convolution2d(out, num_outputs=size2, kernel_size=4, stride=2, activation_fn=tf.nn.relu)
+            out = layers.convolution2d(out, num_outputs=size3, kernel_size=3, stride=1, activation_fn=tf.nn.relu)
             out = layers.flatten(out)
-            with tf.variable_scope("action_value"):
-                out = layers.fully_connected(out, num_outputs=size4,         activation_fn=tf.nn.relu)
-                out = layers.fully_connected(out, num_outputs=num_actions, activation_fn=None)
+            # with tf.variable_scope("action_value"):
+            out = layers.fully_connected(out, num_outputs=size4,         activation_fn=tf.nn.relu)
+            out = layers.fully_connected(out, num_outputs=num_actions, activation_fn=None)
 
             return out
 

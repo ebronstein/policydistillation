@@ -32,10 +32,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
-    # parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
-    # parser.add_argument('-pp', '--preprocess', type=str, default=None,
-    #         choices=[None, 'greyscale', 'blackandwhite'], 
-    #         help='Preprocessing function.')
     args = parser.parse_args()
 
     # get config
@@ -50,7 +46,6 @@ if __name__ == '__main__':
     teacher_config.plot_output  = teacher_config.output_path + "scores.png"
     teacher_config.record_path  = teacher_config.output_path + "monitor/"
     teacher_config.student = False
-    # teacher_config.state_history = args.state_history
 
     # make env
     env = gym.make(teacher_config.env_name)

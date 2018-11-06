@@ -146,7 +146,7 @@ class Pong_v0_config_teacher():
     student = False
 
     # processing
-    preprocess_state = 'blackandwhite'
+    preprocess_state = 'greyscale'
 
     # model and training config
     num_episodes_test = 50
@@ -198,7 +198,7 @@ class Pong_v0_config_student():
     teacher_checkpoint_dir = "results/atari/teacher/model.weights"
 
     # processing
-    preprocess_state = 'blackandwhite'
+    preprocess_state = 'greyscale'
 
     # model and training config
     num_episodes_test = 50
@@ -221,7 +221,7 @@ class Pong_v0_config_student():
     learning_freq      = 4
     state_history      = 4
     skip_frame         = 4
-    lr_begin           = 0.0001 # original implementation: 0.00025, Berkeley implementation: 1e-4
+    lr_begin           = 0.00025 # original implementation: 0.00025, Berkeley implementation: 1e-4
     lr_end             = 0.00005
     lr_nsteps          = nsteps_train/2
     eps_begin          = 1
