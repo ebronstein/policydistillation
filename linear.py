@@ -114,7 +114,7 @@ class Linear(DQN):
 
         # Bellman error
         if self.config.double_q:
-          best_actions = tf.argmax(self.q, axis=1)
+          best_actions = tf.argmax(q, axis=1)
           target_q_one_hot = tf.one_hot(best_actions, depth=num_actions)
           best_target_q = tf.reduce_sum(target_q * target_q_one_hot, axis=1)
         else:
@@ -124,7 +124,10 @@ class Linear(DQN):
         q_samp = self.r + not_done_mask * self.config.gamma * best_target_q
         a_indices = tf.one_hot(self.a, depth=num_actions)
         q_sa = tf.reduce_sum(q * a_indices, axis=1)
-        self.loss = tf.reduce_mean(huber_loss(q_samp - q_sa))
+        # huber loss
+        # self.loss = tf.reduce_mean(huber_loss(q_samp - q_sa))
+        # MSE loss
+        self.loss = tf.reduce_mean(tf.square(q_samp - q_sa))
 
 
     def add_optimizer_op(self, scope):
