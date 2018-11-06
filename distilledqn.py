@@ -1,3 +1,5 @@
+import pdb
+
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
 import numpy as np
@@ -8,7 +10,6 @@ from schedule import LinearExploration, LinearSchedule
 from linear import Linear
 from natureqn import NatureQN
 
-from config import testconfig_student as config
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,7 @@ class DistilledQN(NatureQN):
     def __init__(self, env, config, logger=None, student=True):
         teachermodel = NatureQN(env, config)
         teachermodel.initialize_basic()
+        pdb.set_trace()
         initialize_teacher(teachermodel.sess, teachermodel, 
                            config.teacher_checkpoint_dir)
         self.teachermodel = teachermodel
