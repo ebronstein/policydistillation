@@ -20,8 +20,8 @@ class NatureQN(Linear):
 
     def feedforward_nn(self, state, scope, reuse=False):
         num_actions = self.env.action_space.n
-        return build_mlp(state, num_actions, scope, self.config.n_layers, self.config.nn_size, 
-            activation=self.config.nn_activation, reuse=reuse)
+        return build_mlp(state, num_actions, scope, self.config.n_layers, 
+            self.config.nn_size, activation=self.config.nn_activation, reuse=reuse)
 
     def nature_cnn(self, state, scope, reuse=False):
         num_actions = self.env.action_space.n
@@ -33,7 +33,7 @@ class NatureQN(Linear):
         # Berkeley Deep RL implementation
         with tf.variable_scope(scope, reuse=reuse):
             # with tf.variable_scope("convnet"):
-                # original architecture
+            # original architecture
             out = layers.convolution2d(out, num_outputs=size1, kernel_size=8, stride=4, activation_fn=tf.nn.relu)
             out = layers.convolution2d(out, num_outputs=size2, kernel_size=4, stride=2, activation_fn=tf.nn.relu)
             out = layers.convolution2d(out, num_outputs=size3, kernel_size=3, stride=1, activation_fn=tf.nn.relu)

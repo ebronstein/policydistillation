@@ -1,9 +1,11 @@
 """This file includes a collection of utility functions that are useful for
 implementing DQN."""
+import pdb
+import random
+
 import gym
 import tensorflow as tf
 import numpy as np
-import random
 
 def build_mlp(input_placeholder, output_size, scope, n_layers, size, 
               activation=tf.tanh, output_activation=None, reuse=False):
@@ -28,9 +30,11 @@ def build_mlp(input_placeholder, output_size, scope, n_layers, size,
     with tf.variable_scope(scope, reuse=reuse):
         layers = [input_placeholder]
         for i in range(n_layers):
-            layers.append(tf.layers.dense(layers[-1], size, activation=activation))
+            layers.append(tf.layers.dense(layers[-1], size, activation=activation,
+                    name='dense_layer_' + str(i)))
         # output layer
-        output_placeholder = tf.layers.dense(layers[-1], output_size, activation=output_activation)    
+        output_placeholder = tf.layers.dense(layers[-1], output_size, 
+                activation=output_activation, name='output_layer')
         return output_placeholder
 
 def huber_loss(x, delta=1.0):

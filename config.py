@@ -83,7 +83,7 @@ class CartPole_v0_config_teacher():
     env_name         = "CartPole-v0"
     overwrite_render = True
     record           = False
-    high             = 255.
+    high             = 1. # high=1 ==> state/high=state in preprocess_state function
 
     # output config
     output_path  = "results/CartPole-v0/teacher/"
@@ -97,26 +97,26 @@ class CartPole_v0_config_teacher():
 
     # model and training config
     num_episodes_test = 50
-    grad_clip         = True
-    clip_val          = 10
+    grad_clip         = False
     saving_freq       = 250000
     log_freq          = 50
     eval_freq         = 250000
     record_freq       = 250000
-    soft_epsilon      = 0.05
+    soft_epsilon      = 0. # original: 0.05. Note: this is only used for taking 
+                           # random action when evaluating the policy.
 
     # hyper params
     q_values_model     = 'feedforward_nn'
-    double_q           = True
-    n_layers           = 2
-    nn_size            = 64
+    double_q           = False
+    n_layers           = 2 # original: 2
+    nn_size            = 24 # original: 24
     nn_activation      = 'relu'
     nsteps_train       = 5000000
-    batch_size         = 20
+    batch_size         = 32 # original: 20
     buffer_size        = 1000000
     target_update_freq = 10000
     gamma              = 0.95
-    learning_freq      = 4
+    learning_freq      = 1 # original: 4
     state_history      = 1
     lr_begin           = 0.001
     lr_end             = 0.0001

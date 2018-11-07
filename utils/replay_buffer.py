@@ -140,12 +140,12 @@ class ReplayBuffer(object):
             for idx in range(start_idx, end_idx):
                 frames.append(self.obs[idx % self.size])
             # allow for generic observation shape
-            if len(frames[0].shape) == 1: # 1D vectors
+            if len(self.obs.shape) <= 2: # 1D vectors
                 return np.vstack(frames)
             else: # concatenate along final dimension
                 return np.concatenate(frames, len(frames[0].shape) - 1)
         else:
-            if len(self.obs.shape) <= 2:
+            if len(self.obs.shape) <= 2: # 1D vectors
                 return self.obs[start_idx:end_idx].reshape(self.obs.shape[-1])
             else:
                 # this optimization has potential to saves about 30% compute time \o/

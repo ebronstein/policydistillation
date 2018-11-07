@@ -110,7 +110,11 @@ class Linear(DQN):
         """
         num_actions = self.env.action_space.n
 
-        not_done_mask = tf.abs(1 - tf.cast(self.done_mask, tf.float32))
+        # the following should be the same (I think)
+        # my implementation for Berkeley Deep RL:
+        # not_done_mask = 1. - tf.cast(self.done_mask, tf.float32)
+        # original implementation:
+        not_done_mask = tf.abs(tf.cast(self.done_mask, tf.float32) - 1)
 
         # Bellman error
         if self.config.double_q:

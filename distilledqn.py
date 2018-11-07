@@ -26,7 +26,6 @@ class DistilledQN(NatureQN):
     def __init__(self, env, config, logger=None, student=True):
         teachermodel = NatureQN(env, config)
         teachermodel.initialize_basic()
-        pdb.set_trace()
         initialize_teacher(teachermodel.sess, teachermodel, 
                            config.teacher_checkpoint_dir)
         self.teachermodel = teachermodel
