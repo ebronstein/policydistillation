@@ -35,7 +35,7 @@ if __name__ == '__main__':
             help='Path to teacher checkpoint file.')
     parser.add_argument('student_loss', type=str, choices=['mse', 'nll', 'kl'],
         help='The loss the student uses to learn from the teacher\'s Q values.')
-    parser.add_argument('process_teacher_q', type=str, choices=['softmax'],
+    parser.add_argument('process_teacher_q', choices=['none', 'softmax'],
         help='How to process the teacher Q values for the student loss.')
     parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
         help='Value of tau in softmax for processing teacher Q values.')

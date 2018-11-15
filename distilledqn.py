@@ -38,7 +38,7 @@ class DistilledQN(NatureQN):
         if self.config.process_teacher_q == 'softmax':
             p = tf.nn.softmax(self.teacher_q / self.config.softmax_teacher_q_tau, dim=1) + eps
             q = tf.nn.softmax(q, dim=1) + eps
-        elif self.config.process_teacher_q is not None:
+        elif self.config.process_teacher_q != 'none':
             print('"{0}" is not a valid way to proess the teacher Q values'.format(
                     self.config.process_teacher_q))
             sys.exit()
