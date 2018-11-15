@@ -39,9 +39,8 @@ class QN(object):
         self.student = student
 
         # log the config
-        config_logger = get_logger(self.config.config_path)
-        config_logger.info('Config variables:')
-        config_logger.info(self.config.get_config())
+        self.logger.info('CONFIG VARIABLES:')
+        self.logger.info(self.config.get_config())
 
         # build model
         self.build(student=student)

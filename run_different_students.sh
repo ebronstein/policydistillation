@@ -1,6 +1,6 @@
 set -eux
 
-TEACHER_CHECKPOINT_DIR="~/deeprl/policydistillation/results/Pong-v0_greyscale_mse_2018-11-06-13-43-39/teacher/model.weights"
+TEACHER_CHECKPOINT_DIR="results/Pong-v0_greyscale_mse_2018-11-06-13-43-39/teacher/model.weights/"
 
 # MSE with softmax sharpening
 python distilledqn_atari.py Pong-v0 Pong-v0_greyscale_mse_softmax_0.01 $TEACHER_CHECKPOINT_DIR mse softmax -stqt 0.01
