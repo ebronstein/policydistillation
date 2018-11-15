@@ -33,9 +33,9 @@ if __name__ == '__main__':
     parser.add_argument('exp_name', type=str, help='Experiment name.')
     parser.add_argument('teacher_checkpoint_dir', type=str, 
             help='Path to teacher checkpoint file.')
-    parser.add_argument('student_loss', type=str, choices=['mse', 'nll', 'kl'],
+    parser.add_argument('student_loss', type=str, choices=['mse_qval', 'mse_prob', 'nll', 'kl'],
         help='The loss the student uses to learn from the teacher\'s Q values.')
-    parser.add_argument('process_teacher_q', choices=['none', 'softmax'],
+    parser.add_argument('process_teacher_q', choices=['none', 'softmax_tau'],
         help='How to process the teacher Q values for the student loss.')
     parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
         help='Value of tau in softmax for processing teacher Q values.')

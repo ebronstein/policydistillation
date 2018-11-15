@@ -35,10 +35,13 @@ class DistilledQN(NatureQN):
     def add_loss_op(self, q, target_q):
         eps = 0.00001
 
-        if self.config.process_teacher_q == 'softmax':
-            p = tf.nn.softmax(self.teacher_q / self.config.softmax_teacher_q_tau, dim=1) + eps
-            q = tf.nn.softmax(q, dim=1) + eps
-        elif self.config.process_teacher_q != 'none':
+        if self.config.process_teacher_q == 'softmax_tau':
+            # Divide the teacher Q values by tau, which will result in a softmax
+            # of a different temperature when a softmax is applied.
+            teacher_q = self.teacher_q / self.config.softmax_teacher_q_tau
+        elif self.config.process_teacher_q == 'none': # no processing
+            teacher_q = self.teacher_q
+        else:
             print('"{0}" is not a valid way to proess the teacher Q values'.format(
                     self.config.process_teacher_q))
             sys.exit()
@@ -47,19 +50,29 @@ class DistilledQN(NatureQN):
 
         # Loss functions for distillation
 
-        if self.config.student_loss == 'mse':
-            # MSE
-            self.loss = tf.losses.mean_squared_error(q, self.teacher_q)
+        # Action probabilities (only necessary for certain loss functions)
+        # Get the action probabilities of the teacher by applying a softmax
+        # with a (potentially different) temperature parameter.
+        teacher_prob = tf.nn.softmax(teacher_q, axis=1) + eps
+        # Get the action probabilities of the student by applying a softmax.
+        prob = tf.nn.softmax(q, axis=1) + eps
+
+        if self.config.student_loss == 'mse_qval':
+            # MSE of teacher and student Q values
+            self.loss = tf.losses.mean_squared_error(q, teacher_q)
+        elif self.config.student_loss == 'mse_prob':
+            # MSE of teacher and student action probabilities
+            self.loss = tf.losses.mean_squared_error(prob, teacher_prob)
         elif self.config.student_loss == 'nll':
-            # NLL
+            # NLL of action probabilities
             self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
                 labels=tf.argmax(self.teacher_q, axis=1), 
                 logits=q))
         elif self.config.student_loss == 'kl':
-            # KL
+            # KL of action probabilities
             # _p = tf.nn.softmax(self.teacher_q/tau, dim=1)+eps
             # _q = tf.nn.softmax(q, dim=1)+eps
-            self.loss = tf.reduce_sum(p * tf.log(p / q))
+            self.loss = tf.reduce_sum(teacher_prob * tf.log(teacher_prob / prob))
         else:
             print('"{0}" is not a valid student loss'.format(self.config.student_loss))
             sys.exit()
