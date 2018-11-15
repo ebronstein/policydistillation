@@ -35,17 +35,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # get config
-    teacher_config = eval('config.{0}_config_teacher'.format(
+    teacher_config_class = eval('config.{0}_config_teacher'.format(
             args.env_name.replace('-', '_')))
-    # set config variables
-    teacher_config.env_name = args.env_name
-    teacher_config.output_path = 'results/{0}_{1}/teacher/'.format(
-                args.exp_name, time.strftime('%Y-%m-%d-%H-%M-%S'))
-    teacher_config.model_output = teacher_config.output_path + "model.weights/"
-    teacher_config.log_path     = teacher_config.output_path + "log.txt"
-    teacher_config.plot_output  = teacher_config.output_path + "scores.png"
-    teacher_config.record_path  = teacher_config.output_path + "monitor/"
-    teacher_config.student = False
+    teacher_config = teacher_config_class(args.env_name, args.exp_name)
 
     # make env
     env = gym.make(teacher_config.env_name)
