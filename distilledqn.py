@@ -33,25 +33,38 @@ class DistilledQN(NatureQN):
             env, config, logger=logger, student=student)
 
     def add_loss_op(self, q, target_q):
-        tau = 0.01
         eps = 0.00001
+
+        if self.config.process_teacher_q == 'softmax':
+            p = tf.nn.softmax(self.teacher_q / self.config.softmax_teacher_q_tau, dim=1) + eps
+            q = tf.nn.softmax(q, dim=1) + eps
+        elif self.config.process_teacher_q is not None:
+            print('"{0}" is not a valid way to proess the teacher Q values'.format(
+                    self.config.process_teacher_q))
+            sys.exit()
 
         ##############################
 
         # Loss functions for distillation
 
-        # MSE
-        self.loss = tf.losses.mean_squared_error(q, self.teacher_q)
+        if self.config.student_loss == 'mse':
+            # MSE
+            self.loss = tf.losses.mean_squared_error(q, self.teacher_q)
+        elif self.config.student_loss == 'nll':
+            # NLL
+            self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
+                labels=tf.argmax(self.teacher_q, axis=1), 
+                logits=q))
+        elif self.config.student_loss == 'kl':
+            # KL
+            # _p = tf.nn.softmax(self.teacher_q/tau, dim=1)+eps
+            # _q = tf.nn.softmax(q, dim=1)+eps
+            self.loss = tf.reduce_sum(p * tf.log(p / q))
+        else:
+            print('"{0}" is not a valid student loss'.format(self.config.student_loss))
+            sys.exit()
 
-        # NLL
-        # self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
-        #     labels=tf.argmax(self.teacher_q, axis=1), 
-        #     logits=q))
 
-        # KL
-        # _p = tf.nn.softmax(self.teacher_q/tau, dim=1)+eps
-        # _q = tf.nn.softmax(q, dim=1)+eps
-        # self.loss = tf.reduce_sum(_p * tf.log(_p/_q))
 
 """
 Use distilled Q network for test environment.

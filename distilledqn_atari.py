@@ -31,15 +31,24 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
-    # parser.add_argument('state_history', type=int, help='Length of state history (inclusive of current state).')
     parser.add_argument('teacher_checkpoint_dir', type=str, 
             help='Path to teacher checkpoint file.')
+    parser.add_argument('student_loss', type=str, choices=['mse', 'nll', 'kl'],
+        help='The loss the student uses to learn from the teacher\'s Q values.')
+    parser.add_argument('process_teacher_q', type=str, choices=['softmax'],
+        help='How to process the teacher Q values for the student loss.')
+    parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
+        help='Value of tau in softmax for processing teacher Q values.')
     args = parser.parse_args()
 
     # get config
     student_config_class = eval('config.{0}_config_student'.format(
             args.env_name.replace('-', '_')))
     student_config = student_config_class(args.env_name, args.exp_name, args.teacher_checkpoint_dir)
+    # set config variables from command-line arguments
+    student_config.student_loss = args.student_loss
+    student_config.process_teacher_q = args.process_teacher_q
+    student_config.softmax_teacher_q_tau = args.softmax_teacher_q_tau
 
     # make env
     env = gym.make(student_config.env_name)

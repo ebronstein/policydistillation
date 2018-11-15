@@ -123,6 +123,14 @@ class Pong_v0_config_student(StudentBaseConfig):
 
     # processing
     preprocess_state = 'greyscale'
+    # if True, process teacher Q values with the given method
+    process_teacher_q = 'softmax'
+    # tau value for softmax_teacher_q to sharpen (tau < 1) or soften (tau > 1)
+    # the teacher Q values
+    softmax_teacher_q_tau = 0.01
+
+    # student training
+    student_loss = 'kl' # student loss when training on teacher Q values
 
     # model and training config
     num_episodes_test = 50
