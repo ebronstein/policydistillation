@@ -37,7 +37,8 @@ if __name__ == '__main__':
     # get config
     teacher_config_class = eval('config.{0}_config_teacher'.format(
             args.env_name.replace('-', '_')))
-    teacher_config = teacher_config_class(args.env_name, args.exp_name)
+    output_path = "results/{0}/teacher_{0}/".format(args.exp_name)
+    teacher_config = teacher_config_class(args.env_name, args.exp_name, output_path)
 
     # make env
     env = gym.make(teacher_config.env_name)

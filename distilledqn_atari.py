@@ -44,7 +44,9 @@ if __name__ == '__main__':
     # get config
     student_config_class = eval('config.{0}_config_student'.format(
             args.env_name.replace('-', '_')))
-    student_config = student_config_class(args.env_name, args.exp_name, args.teacher_checkpoint_dir)
+    # go up 2 directories to 'results/{exp_name}', then save to directory 'student_{exp_name}'
+    output_path = args.teacher_checkpoint_dir + '../../student_{0}/'.format(args.exp_name)
+    student_config = student_config_class(args.env_name, args.exp_name, output_path, args.teacher_checkpoint_dir)
     # set config variables from command-line arguments
     student_config.student_loss = args.student_loss
     student_config.process_teacher_q = args.process_teacher_q

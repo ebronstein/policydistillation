@@ -1,7 +1,7 @@
 class BaseConfig():
-    def __init__(self, env_name, exp_name):
+    def __init__(self, env_name, exp_name, output_path):
         # output config
-        self.output_path  = "results/{0}/teacher/".format(exp_name)
+        self.output_path = output_path
         self.model_output = self.output_path + "model.weights/"
         self.log_path     = self.output_path + "log.txt"
         self.plot_output  = self.output_path + "scores.png"
@@ -23,8 +23,8 @@ class TeacherBaseConfig(BaseConfig):
 
 
 class StudentBaseConfig(BaseConfig):
-    def __init__(self, env_name, exp_name, teacher_checkpoint_dir):
-        BaseConfig.__init__(self, env_name, exp_name)
+    def __init__(self, env_name, exp_name, output_path, teacher_checkpoint_dir):
+        BaseConfig.__init__(self, env_name, exp_name, output_path)
         self.teacher_checkpoint_dir = teacher_checkpoint_dir
 
     # student/teacher config
