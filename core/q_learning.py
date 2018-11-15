@@ -1,5 +1,4 @@
 import os
-import pdb
 import gym
 import numpy as np
 import tensorflow as tf
@@ -35,9 +34,14 @@ class QN(object):
         self.config = config
         self.logger = logger
         if logger is None:
-            self.logger = get_logger(config.log_path)
+            self.logger = get_logger(self.config.log_path)
         self.env = env
         self.student = student
+
+        # log the config
+        config_logger = get_logger(self.config.config_path)
+        config_logger.info('Config variables:')
+        config_logger.info(self.config.get_config())
 
         # build model
         self.build(student=student)

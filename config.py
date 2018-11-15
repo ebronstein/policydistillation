@@ -4,6 +4,7 @@ class BaseConfig():
         self.output_path = output_path
         self.model_output = self.output_path + "model.weights/"
         self.log_path     = self.output_path + "log.txt"
+        self.config_path     = self.output_path + "config.txt"
         self.plot_output  = self.output_path + "scores.png"
         self.record_path  = self.output_path + "monitor/"
 
