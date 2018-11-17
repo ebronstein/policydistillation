@@ -5,12 +5,14 @@ TEACHER_CHECKPOINT_DIR="results/Pong-v0_greyscale_mse_2018-11-06-13-43-39/teache
 ## Softmax sharpening
 
 # MSE of action probabilities with softmax sharpening
+# max evaluated reward: 11.32
 python distilledqn_atari.py Pong-v0 Pong-v0_greyscale_mse_prob_softmax_0.01 $TEACHER_CHECKPOINT_DIR mse_prob softmax_tau -stqt 0.01
 
 
 ## No softmax
 
 # KL without softmax sharpening/softening
+# max evaluated reward: 11.18
 python distilledqn_atari.py Pong-v0 Pong-v0_greyscale_kl $TEACHER_CHECKPOINT_DIR kl none
 
 

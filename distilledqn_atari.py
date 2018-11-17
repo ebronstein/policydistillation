@@ -39,6 +39,11 @@ if __name__ == '__main__':
         help='How to process the teacher Q values for the student loss.')
     parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
         help='Value of tau in softmax for processing teacher Q values.')
+    parser.add_argument('-wmse', '--mse_prob_loss_weight', type=float, default=1.,
+        help='Weight associated with the student loss of MSE over action probabilities.')
+    parser.add_argument('-wnll', '--nll_loss_weight', type=float, default=1.,
+        help='Weight associated with the student loss of NLL over Q values or action probabilities.')
+
     args = parser.parse_args()
 
     # get config
@@ -51,6 +56,8 @@ if __name__ == '__main__':
     student_config.student_loss = args.student_loss
     student_config.process_teacher_q = args.process_teacher_q
     student_config.softmax_teacher_q_tau = args.softmax_teacher_q_tau
+    student_config.mse_prob_loss_weight = args.mse_prob_loss_weight
+    student_config.nll_loss_weight = args.nll_loss_weight
 
     # make env
     env = gym.make(student_config.env_name)
