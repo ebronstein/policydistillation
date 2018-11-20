@@ -75,8 +75,8 @@ class DistilledQN(NatureQN):
             nll_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
                 labels=tf.argmax(self.teacher_q, axis=1), 
                 logits=q))
-            self.loss = (config.mse_prob_loss_weight * mse_prob_loss + 
-                         config.nll_loss_weight * nll_loss)
+            self.loss = (self.config.mse_prob_loss_weight * mse_prob_loss + 
+                         self.config.nll_loss_weight * nll_loss)
         elif self.config.student_loss == 'kl':
             # KL of action probabilities
             self.loss = tf.reduce_sum(teacher_prob * tf.log(teacher_prob / prob))
