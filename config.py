@@ -131,8 +131,8 @@ class Pong_v0_config_student(StudentBaseConfig):
 
     # student training
     student_loss = 'kl' # student loss when training on teacher Q values
-    config.mse_prob_loss_weight = 1. # weight associated with the MSE over action probabilities loss
-    config.nll_loss_weight = 1. # weight associated with the NLL over Q values/action probabilities loss
+    mse_prob_loss_weight = 1. # weight associated with the MSE over action probabilities loss
+    nll_loss_weight = 1. # weight associated with the NLL over Q values/action probabilities loss
 
     # model and training config
     num_episodes_test = 50
