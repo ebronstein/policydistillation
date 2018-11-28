@@ -65,7 +65,7 @@ def print_tensors_in_checkpoint_file(file_name, tensor_name, all_tensors,
       tensors[tensor_name] = reader.get_tensor(tensor_name)
     return tensors
   except Exception as e:  # pylint: disable=broad-except
-    print(str(e))
+    print('Exception:', str(e))
     if "corrupted compressed block contents" in str(e):
       print("It's likely that your checkpoint file has been compressed "
             "with SNAPPY.")

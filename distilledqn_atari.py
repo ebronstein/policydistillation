@@ -37,7 +37,7 @@ if __name__ == '__main__':
         help='The loss the student uses to learn from the teacher\'s Q values.')
     parser.add_argument('process_teacher_q', choices=['none', 'softmax_tau'],
         help='How to process the teacher Q values for the student loss.')
-    parser.add_argument('choose_teacher_q', choices=['mean'],
+    parser.add_argument('choose_teacher_q', choices=['none', 'mean'],
         help='How to choose the teacher Q values for the student loss at each iteration.')
     parser.add_argument('-tcd', '--teacher_checkpoint_dirs', nargs='+', type=str, 
             help='Paths to teachers\' checkpoint files (in same order as their names).')

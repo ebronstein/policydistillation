@@ -65,8 +65,11 @@ class DistilledQN(NatureQN):
         # Choosing the teacher Q values
         if self.config.choose_teacher_q == 'mean':
             teacher_q = tf.reduce_mean(self.teacher_q, axis=0)
-        elif self.config.process_teacher_q == 'none': # no processing
-            teacher_q = self.teacher_q
+        # no choice
+        elif self.config.choose_teacher_q == 'none':
+            pdb.set_trace()
+            assert self.num_teachers == 1 # only applicable when there is one teacher
+            teacher_q = self.teacher_q[0]
         else:
             print('"{0}" is not a valid way to choose the teacher Q values'.format(
                     self.config.choose_teacher_q))
