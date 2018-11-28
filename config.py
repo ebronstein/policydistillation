@@ -7,8 +7,9 @@ class BaseConfig():
         self.plot_output  = self.output_path + "scores.png"
         self.record_path  = self.output_path + "monitor/"
 
-        # env config
+        # experiment config
         self.env_name = env_name
+        self.exp_name = exp_name
 
     def get_config(self):
         params = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
@@ -23,9 +24,11 @@ class TeacherBaseConfig(BaseConfig):
 
 
 class StudentBaseConfig(BaseConfig):
-    def __init__(self, env_name, exp_name, output_path, teacher_checkpoint_dir):
+    def __init__(self, env_name, exp_name, output_path, teacher_checkpoint_dirs, 
+                teacher_checkpoint_names):
         BaseConfig.__init__(self, env_name, exp_name, output_path)
-        self.teacher_checkpoint_dir = teacher_checkpoint_dir
+        self.teacher_checkpoint_dirs = teacher_checkpoint_dirs
+        self.teacher_checkpoint_names = teacher_checkpoint_names
 
     # student/teacher config
     student = True
@@ -123,8 +126,10 @@ class Pong_v0_config_student(StudentBaseConfig):
 
     # processing
     preprocess_state = 'greyscale'
-    # if True, process teacher Q values with the given method
+    # process teacher Q values with the given method
     process_teacher_q = 'softmax'
+    # choose the teacher Q values at each iteration with the given method
+    choose_teacher_q = 'mean'
     # tau value for softmax_teacher_q to sharpen (tau < 1) or soften (tau > 1)
     # the teacher Q values
     softmax_teacher_q_tau = 0.01

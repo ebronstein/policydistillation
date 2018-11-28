@@ -2,6 +2,7 @@ import pdb
 
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
+import utils.inspect_checkpoint as chkp
 import numpy as np
 
 from utils.general import get_logger
@@ -18,37 +19,77 @@ logging.basicConfig(level=logging.INFO)
 
 def initialize_teacher(session, model, train_dir, seed=42):
     tf.set_random_seed(seed)
+    # with session:
+    #     trainable_vars_pre = {str(v): v.eval() for v in tf.trainable_variables()}
     logging.info("Reading model parameters from %s" % train_dir)
+    
+    teacher_tensors = chkp.print_tensors_in_checkpoint_file(train_dir, 
+            tensor_name='', all_tensors=True)
+    
+    teacher_student_tensors = {}
+    for teacher_tensor in teacher_tensors.keys():
+        try:
+            with tf.variable_scope(model.parent_scope, reuse=True): 
+                student_tensor = tf.get_variable(teacher_tensor)
+            teacher_student_tensors[teacher_tensor] = student_tensor
+        except Exception as e:
+            print(e)
+
+    model.saver = tf.train.Saver(teacher_student_tensors)
+    
     model.saver.restore(session, train_dir)
     logging.info('[Teacher] Num params: %d' % model.size)
 
 class DistilledQN(NatureQN):
     def __init__(self, env, config, logger=None, student=True):
-        teachermodel = NatureQN(env, config)
-        teachermodel.initialize_basic()
-        initialize_teacher(teachermodel.sess, teachermodel, 
-                           config.teacher_checkpoint_dir)
-        self.teachermodel = teachermodel
-        super(DistilledQN, self).__init__(
-            env, config, logger=logger, student=student)
-
+        self.teachermodels = []
+        for teacher_checkpoint_name, teacher_checkpoint_dir in zip(
+                config.teacher_checkpoint_names, config.teacher_checkpoint_dirs):
+            parent_scope = teacher_checkpoint_name
+            with tf.variable_scope(parent_scope, reuse=False):
+                teachermodel = NatureQN(env, config, parent_scope)
+                teachermodel.initialize_basic()
+            initialize_teacher(teachermodel.sess, teachermodel, 
+                               teacher_checkpoint_dir)
+            self.teachermodels.append(teachermodel)
+        self.num_teachers = len(self.teachermodels)
+        student_parent_scope = config.exp_name
+        with tf.variable_scope(student_parent_scope, reuse=False):
+            super(DistilledQN, self).__init__(
+                env, config, student_parent_scope, logger=logger, student=student)
+        
     def add_loss_op(self, q, target_q):
-        eps = 0.00001
+
+        ##############################
+
+        # Choosing the teacher Q values
+        if self.config.choose_teacher_q == 'mean':
+            teacher_q = tf.reduce_mean(self.teacher_q, axis=0)
+        elif self.config.process_teacher_q == 'none': # no processing
+            teacher_q = self.teacher_q
+        else:
+            print('"{0}" is not a valid way to choose the teacher Q values'.format(
+                    self.config.choose_teacher_q))
+            sys.exit()
+
+        ##############################
+
+        # Preprocessing teacher Q values
 
         if self.config.process_teacher_q == 'softmax_tau':
             # Divide the teacher Q values by tau, which will result in a softmax
             # of a different temperature when a softmax is applied.
-            teacher_q = self.teacher_q / self.config.softmax_teacher_q_tau
-        elif self.config.process_teacher_q == 'none': # no processing
-            teacher_q = self.teacher_q
-        else:
-            print('"{0}" is not a valid way to proess the teacher Q values'.format(
+            teacher_q = teacher_q / self.config.softmax_teacher_q_tau
+        elif self.config.process_teacher_q != 'none':
+            print('"{0}" is not a valid way to process the teacher Q values'.format(
                     self.config.process_teacher_q))
             sys.exit()
 
         ##############################
 
         # Loss functions for distillation
+        
+        eps = 0.00001
 
         # Action probabilities (only necessary for certain loss functions)
         # Get the action probabilities of the teacher by applying a softmax
@@ -66,14 +107,14 @@ class DistilledQN(NatureQN):
         elif self.config.student_loss == 'nll':
             # NLL of action probabilities
             self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
-                labels=tf.argmax(self.teacher_q, axis=1), 
+                labels=tf.argmax(teacher_q, axis=1), 
                 logits=q))
         elif self.config.student_loss == 'mse_prob_nll':
             # MSE of teacher and student action probabilities
             mse_prob_loss = tf.losses.mean_squared_error(prob, teacher_prob)
             # NLL of action probabilities
             nll_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(
-                labels=tf.argmax(self.teacher_q, axis=1), 
+                labels=tf.argmax(teacher_q, axis=1), 
                 logits=q))
             self.loss = (self.config.mse_prob_loss_weight * mse_prob_loss + 
                          self.config.nll_loss_weight * nll_loss)

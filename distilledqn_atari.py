@@ -1,4 +1,5 @@
 import argparse
+import pdb
 import time
 
 import gym
@@ -31,13 +32,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
-    parser.add_argument('teacher_checkpoint_dir', type=str, 
-            help='Path to teacher checkpoint file.')
     parser.add_argument('student_loss', type=str, 
         choices=['mse_qval', 'mse_prob', 'mse_prob_nll', 'nll', 'kl'],
         help='The loss the student uses to learn from the teacher\'s Q values.')
     parser.add_argument('process_teacher_q', choices=['none', 'softmax_tau'],
         help='How to process the teacher Q values for the student loss.')
+    parser.add_argument('choose_teacher_q', choices=['mean'],
+        help='How to choose the teacher Q values for the student loss at each iteration.')
+    parser.add_argument('-tcd', '--teacher_checkpoint_dirs', nargs='+', type=str, 
+            help='Paths to teachers\' checkpoint files (in same order as their names).')
+    parser.add_argument('-tcn', '--teacher_checkpoint_names', nargs='+', type=str, 
+            help='Names of the teacher models (in same order as their checkpoint files).')
     parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
         help='Value of tau in softmax for processing teacher Q values.')
     parser.add_argument('-wmse', '--mse_prob_loss_weight', type=float, default=1.,
@@ -47,15 +52,24 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # assertions
+    assert len(args.teacher_checkpoint_dirs) == len(args.teacher_checkpoint_names)
+
     # get config
     student_config_class = eval('config.{0}_config_student'.format(
             args.env_name.replace('-', '_')))
     # go up 2 directories to 'results/{exp_name}', then save to directory 'student_{exp_name}'
-    output_path = args.teacher_checkpoint_dir + '../../student_{0}/'.format(args.exp_name)
-    student_config = student_config_class(args.env_name, args.exp_name, output_path, args.teacher_checkpoint_dir)
+    if len(args.teacher_checkpoint_dirs) == 1:
+        output_path = args.teacher_checkpoint_dirs[0] + '../../student_{0}/'.format(args.exp_name)
+    else:
+        output_path = 'results/student_{0}/'.format(args.exp_name)
+    student_config = student_config_class(args.env_name, args.exp_name, 
+            output_path, args.teacher_checkpoint_dirs, 
+            args.teacher_checkpoint_names)
     # set config variables from command-line arguments
     student_config.student_loss = args.student_loss
     student_config.process_teacher_q = args.process_teacher_q
+    student_config.choose_teacher_q = args.choose_teacher_q
     student_config.softmax_teacher_q_tau = args.softmax_teacher_q_tau
     student_config.mse_prob_loss_weight = args.mse_prob_loss_weight
     student_config.nll_loss_weight = args.nll_loss_weight

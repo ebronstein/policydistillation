@@ -72,30 +72,43 @@ class DQN(QN):
         Build model by adding all necessary variables
         """
         # add placeholders
-
         self.add_placeholders_op()
+
+        # define scopes
+        q_scope = "q%d" % student
+        target_q_scope = "target_q%d" % student
 
         # compute Q values of state
         s = self.process_state(self.s)
-        self.q = self.get_q_values_op(s, scope="q%d" % student, reuse=False)
+        # self.q = self.get_q_values_op(s, scope="q%d" % student, reuse=False)
+        self.q = self.get_q_values_op(s, scope=q_scope, reuse=False)
 
         # compute Q values of next state
         sp = self.process_state(self.sp)
-        self.target_q = self.get_q_values_op(sp, scope="target_q%d" % student, reuse=False)
+        # self.target_q = self.get_q_values_op(sp, scope="target_q%d" % student, reuse=False)
+        self.target_q = self.get_q_values_op(sp, scope=target_q_scope, reuse=False)
 
         # add update operator for target network
-        self.add_update_target_op("q%d" % student, "target_q%d" % student)
+        # self.add_update_target_op("q%d" % student, "target_q%d" % student)
+        self.add_update_target_op(q_scope, target_q_scope)
 
         # add square loss
         self.add_loss_op(self.q, self.target_q)
 
         # add optimizer for the main networks
-        self.add_optimizer_op("q%d" % student)
+        # self.add_optimizer_op("q%d" % student)
+        # add self.config.exp_name to the scope to properly access the variables
+        self.add_optimizer_op(self.parent_scope + '/' + q_scope)
 
 
     def initialize_basic(self):
         # create tf session
         self.sess = tf.Session()
+
+        # TODO: add name argument to restore weights to a unique model name
+        # ex:
+        # Add ops to save and restore only `v2` using the name "v2"
+        # saver = tf.train.Saver({"v2": v2})
 
         # for saving networks weights
         self.saver = tf.train.Saver()
@@ -221,9 +234,12 @@ class DQN(QN):
         }
 
         if self.student:
-            teacher_q_vals = self.teachermodel.sess.run([self.teachermodel.q], 
-                feed_dict={self.teachermodel.s: s_batch})[0]
-            fd[self.teacher_q] = teacher_q_vals
+            teacher_q_vals_list = []
+            for teachermodel in self.teachermodels:
+                teacher_q_vals = teachermodel.sess.run([teachermodel.q], 
+                    feed_dict={teachermodel.s: s_batch})[0]
+                teacher_q_vals_list.append(teacher_q_vals)
+            fd[self.teacher_q] = teacher_q_vals_list
             # self.teacher_q_idx += 1
 
         loss_eval, grad_norm_eval, summary, _ = self.sess.run([self.loss, self.grad_norm, 

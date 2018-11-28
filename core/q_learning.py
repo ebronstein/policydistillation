@@ -1,4 +1,5 @@
 import os
+import pdb
 import gym
 import numpy as np
 import tensorflow as tf
@@ -18,12 +19,14 @@ class QN(object):
     """
     Abstract Class for implementing a Q Network
     """
-    def __init__(self, env, config, logger=None, student=False):
+    def __init__(self, env, config, parent_scope, logger=None, student=False):
         """
         Initialize Q Network and env
 
         Args:
+            env: environment
             config: class with hyperparameters
+            parent_scope: parent scope under which this model is constructed
             logger: logger instance from logging module
         """
         # directory for training outputs
@@ -37,6 +40,7 @@ class QN(object):
             self.logger = get_logger(self.config.log_path)
         self.env = env
         self.student = student
+        self.parent_scope = parent_scope
 
         # log the config
         self.logger.info('CONFIG VARIABLES:')
@@ -45,9 +49,11 @@ class QN(object):
         # build model
         self.build(student=student)
 
-        self.size = sum(v.get_shape().num_elements() for v in tf.trainable_variables())
-        if self.student:
-            self.size -= self.teachermodel.size
+        self.size = sum(v.get_shape().num_elements() for v in tf.trainable_variables(self.parent_scope))
+        # subtracting the size of the teacher models is no longer necessary
+        # because tf.trainable_variables is using the scope of this student model only
+        # if self.student:
+        #     self.size -= sum([teachermodel.size for teachermodel in self.teachermodels])
         self.logger.info('Num params: %d' % self.size)
 
 
