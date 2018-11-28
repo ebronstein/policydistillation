@@ -67,9 +67,8 @@ class DistilledQN(NatureQN):
             teacher_q = tf.reduce_mean(self.teacher_q, axis=0)
         # choose a teacher randomly
         if self.config.choose_teacher_q == 'random':
-            pdb.set_trace()
             random_idx = tf.random_uniform((), minval=0, 
-                maxval=self.num_teachers + 1, dtype=tf.int32)
+                maxval=self.num_teachers, dtype=tf.int32)
             teacher_q = self.teacher_q[random_idx]
         # no choice
         elif self.config.choose_teacher_q == 'none':
