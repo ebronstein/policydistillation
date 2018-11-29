@@ -129,9 +129,9 @@ class Linear(DQN):
         a_indices = tf.one_hot(self.a, depth=num_actions)
         q_sa = tf.reduce_sum(q * a_indices, axis=1)
         # huber loss
-        # self.loss = tf.reduce_mean(huber_loss(q_samp - q_sa))
+        self.loss = tf.reduce_mean(huber_loss(q_samp - q_sa))
         # MSE loss
-        self.loss = tf.reduce_mean(tf.square(q_samp - q_sa))
+        # self.loss = tf.reduce_mean(tf.square(q_samp - q_sa))
 
 
     def add_optimizer_op(self, scope):
