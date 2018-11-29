@@ -1,4 +1,5 @@
 import pdb
+import sys
 
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
@@ -66,7 +67,7 @@ class DistilledQN(NatureQN):
         if self.config.choose_teacher_q == 'mean':
             teacher_q = tf.reduce_mean(self.teacher_q, axis=0)
         # choose a teacher randomly
-        if self.config.choose_teacher_q == 'random':
+        elif self.config.choose_teacher_q == 'random':
             random_idx = tf.random_uniform((), minval=0, 
                 maxval=self.num_teachers, dtype=tf.int32)
             teacher_q = self.teacher_q[random_idx]
