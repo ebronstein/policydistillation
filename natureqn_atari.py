@@ -57,5 +57,5 @@ if __name__ == '__main__':
             teacher_config.lr_nsteps)
 
     # train model
-    model = NatureQN(env, teacher_config)
+    model = NatureQN(env, teacher_config, parent_scope=None) # use experiment name for the scope
     model.run(exp_schedule, lr_schedule)

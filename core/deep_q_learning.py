@@ -98,10 +98,13 @@ class DQN(QN):
         # add optimizer for the main networks
         # self.add_optimizer_op("q%d" % student)
         # add self.config.exp_name to the scope to properly access the variables
-        self.add_optimizer_op(self.parent_scope + '/' + q_scope)
+        if self.parent_scope is not None:
+            self.add_optimizer_op(self.parent_scope + '/' + q_scope)
+        else:
+            self.add_optimizer_op(q_scope)
 
 
-    def initialize_basic(self, num_gpus):
+    def initialize_basic(self):
         # create tf session
         self.sess = tf.Session(config=tf.ConfigProto(
             device_count={'GPU': 3}
