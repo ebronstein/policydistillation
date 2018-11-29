@@ -101,9 +101,12 @@ class DQN(QN):
         self.add_optimizer_op(self.parent_scope + '/' + q_scope)
 
 
-    def initialize_basic(self):
+    def initialize_basic(self, num_gpus):
         # create tf session
-        self.sess = tf.Session()
+        self.sess = tf.Session(config=tf.ConfigProto(
+            device_count={'GPU': 3}
+            )
+        )
 
         # TODO: add name argument to restore weights to a unique model name
         # ex:
