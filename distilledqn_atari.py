@@ -49,6 +49,8 @@ if __name__ == '__main__':
         help='Weight associated with the student loss of MSE over action probabilities.')
     parser.add_argument('-wnll', '--nll_loss_weight', type=float, default=1.,
         help='Weight associated with the student loss of NLL over Q values or action probabilities.')
+    parser.add_argument('-nt', '--nsteps_train', type=int, default=5000000,
+        help='Number of timesteps to train for.')
 
     args = parser.parse_args()
 
@@ -66,6 +68,7 @@ if __name__ == '__main__':
     student_config = student_config_class(args.env_name, args.exp_name, 
             output_path, args.teacher_checkpoint_dirs, 
             args.teacher_checkpoint_names)
+    
     # set config variables from command-line arguments
     student_config.student_loss = args.student_loss
     student_config.process_teacher_q = args.process_teacher_q
@@ -73,7 +76,9 @@ if __name__ == '__main__':
     student_config.softmax_teacher_q_tau = args.softmax_teacher_q_tau
     student_config.mse_prob_loss_weight = args.mse_prob_loss_weight
     student_config.nll_loss_weight = args.nll_loss_weight
-
+    student_config.nsteps_train = args.nsteps_train
+    student_config.lr_nsteps = args.nsteps_train / 2
+    
     # make env
     env = gym.make(student_config.env_name)
     if hasattr(student_config, 'skip_frame'):

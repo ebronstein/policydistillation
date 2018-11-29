@@ -32,6 +32,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
+    parser.add_argument('-nt', '--nsteps_train', type=int, default=5000000,
+        help='Number of timesteps to train for.')
     args = parser.parse_args()
 
     # get config
@@ -39,6 +41,10 @@ if __name__ == '__main__':
             args.env_name.replace('-', '_')))
     output_path = "results/{0}/teacher_{0}/".format(args.exp_name)
     teacher_config = teacher_config_class(args.env_name, args.exp_name, output_path)
+    
+    # set config variables from command line arguments
+    teacher_config.nsteps_train = args.nsteps_train
+    teacher_config.lr_nsteps = args.nsteps_train / 2
 
     # make env
     env = gym.make(teacher_config.env_name)
