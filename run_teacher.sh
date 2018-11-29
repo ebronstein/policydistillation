@@ -1,0 +1,3 @@
+set -eux
+
+python natureqn_atari.py PongDeterministic-v4 PongDeterministic-v4_greyscale_huber_teacher
