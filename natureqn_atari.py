@@ -6,7 +6,7 @@ import gym
 from utils.preprocess import greyscale, blackandwhite
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
-from schedule import LinearExploration, LinearSchedule
+from schedule import LinearExploration, LinearSchedule, PiecewiseExploration
 from natureqn import NatureQN
 
 import config
@@ -40,11 +40,8 @@ if __name__ == '__main__':
     teacher_config_class = eval('config.{0}_config_teacher'.format(
             args.env_name.replace('-', '_')))
     output_path = "results/{0}/teacher_{0}/".format(args.exp_name)
-    teacher_config = teacher_config_class(args.env_name, args.exp_name, output_path)
-    
-    # set config variables from command line arguments
-    teacher_config.nsteps_train = args.nsteps_train
-    teacher_config.lr_nsteps = args.nsteps_train / 2
+    teacher_config = teacher_config_class(args.env_name, args.exp_name, 
+            output_path, args.nsteps_train)
 
     # make env
     env = gym.make(teacher_config.env_name)
@@ -55,12 +52,16 @@ if __name__ == '__main__':
                             overwrite_render=teacher_config.overwrite_render)
 
     # exploration strategy
-    exp_schedule = LinearExploration(env, teacher_config.eps_begin, 
-            teacher_config.eps_end, teacher_config.eps_nsteps)
+    exp_schedule = PiecewiseExploration(env, teacher_config.exp_endpoints, 
+            outside_value=teacher_config.exp_outside_value)
+    # exp_schedule = LinearExploration(env, teacher_config.eps_begin, 
+    #         teacher_config.eps_end, teacher_config.eps_nsteps)
 
     # learning rate schedule
     lr_schedule  = LinearSchedule(teacher_config.lr_begin, teacher_config.lr_end,
             teacher_config.lr_nsteps)
+
+    pdb.set_trace()
 
     # train model
     model = NatureQN(env, teacher_config, parent_scope=None) # use experiment name for the scope

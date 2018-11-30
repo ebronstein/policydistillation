@@ -66,7 +66,7 @@ if __name__ == '__main__':
     else:
         output_path = 'results/student_{0}/'.format(args.exp_name)
     student_config = student_config_class(args.env_name, args.exp_name, 
-            output_path, args.teacher_checkpoint_dirs, 
+            output_path, args.nsteps_train, args.teacher_checkpoint_dirs, 
             args.teacher_checkpoint_names)
     
     # set config variables from command-line arguments
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     student_config.nll_loss_weight = args.nll_loss_weight
     student_config.nsteps_train = args.nsteps_train
     student_config.lr_nsteps = args.nsteps_train / 2
-    
+
     # make env
     env = gym.make(student_config.env_name)
     if hasattr(student_config, 'skip_frame'):
