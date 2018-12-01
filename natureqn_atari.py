@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     # learning rate schedule
     lr_schedule  = PiecewiseSchedule(teacher_config.lr_endpoints, 
-            teacher_config.lr_outside_value)
+            outside_value=teacher_config.lr_outside_value)
     # lr_schedule  = LinearSchedule(teacher_config.lr_begin, teacher_config.lr_end,
     #         teacher_config.lr_nsteps)
 
