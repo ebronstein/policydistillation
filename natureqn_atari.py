@@ -6,7 +6,7 @@ import gym
 from utils.preprocess import greyscale, blackandwhite
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
-from schedule import LinearExploration, LinearSchedule, PiecewiseExploration
+from schedule import LinearExploration, LinearSchedule, PiecewiseExploration, PiecewiseSchedule
 from natureqn import NatureQN
 
 import config
@@ -62,8 +62,6 @@ if __name__ == '__main__':
             teacher_config.lr_outside_value)
     # lr_schedule  = LinearSchedule(teacher_config.lr_begin, teacher_config.lr_end,
     #         teacher_config.lr_nsteps)
-
-    pdb.set_trace()
 
     # train model
     model = NatureQN(env, teacher_config, parent_scope=None) # use experiment name for the scope
