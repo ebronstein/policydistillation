@@ -12,9 +12,25 @@ class BaseConfig():
         self.exp_name = exp_name
 
         self.nsteps_train = nsteps_train
-        self.lr_nsteps          = self.nsteps_train / 2
-        self.exp_num_iterations = float(self.nsteps_train) / 4.0
-        self.exp_endpoints = [(0, 1.0), (1e6, 0.1), (self.exp_num_iterations / 2, 0.01)]
+        self.num_iterations = float(self.nsteps_train) / 4.0
+
+        # learning rate
+        self.lr_multiplier = 1.0
+        # self.lr_nsteps          = self.nsteps_train / 2
+        self.lr_endpoints = [
+                (0, 1e-4 * self.lr_multiplier), 
+                (self.num_iterations / 10, 1e-4 * self.lr_multiplier), 
+                (self.num_iterations / 2,  5e-5 * self.lr_multiplier)
+                ]
+        self.lr_outside_value = 5e-5 * self.lr_multiplier
+
+        # exploration
+        self.exp_endpoints = [
+                (0, 1.0), 
+                (1e6, 0.1), 
+                (self.num_iterations / 2, 0.01)
+                ]
+        exp_outside_value = 0.01
 
     def get_config(self):
         params = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
@@ -171,7 +187,7 @@ class Pong_v0_config_student(StudentBaseConfig):
     eps_nsteps         = 1000000
     learning_start     = 50000
 
-class PongDeterministic_v4_config_teacher(TeacherBaseConfig):
+class PongNoFrameskip_v4_config_teacher(TeacherBaseConfig):
     # env config
     render_train     = False
     render_test      = False
@@ -205,13 +221,13 @@ class PongDeterministic_v4_config_teacher(TeacherBaseConfig):
     state_history      = 4
     skip_frame         = 4
     # learning rate
-    lr_begin           = 0.0001 # original implementation: 0.00025, Berkeley implementation: 1e-4
-    lr_end             = 0.00005
+    # lr_begin           = 0.0001 # original implementation: 0.00025, Berkeley implementation: 1e-4
+    # lr_end             = 0.00005
     # exploration
     # eps_begin          = 1
     # eps_end            = 0.1
     # eps_nsteps         = self.nsteps_train/2
-    exp_outside_value = 0.01
+
     learning_start     = 50000
 
 # class atariconfig_student():

@@ -112,9 +112,9 @@ class Linear(DQN):
 
         # the following should be the same (I think)
         # my implementation for Berkeley Deep RL:
-        # not_done_mask = 1. - tf.cast(self.done_mask, tf.float32)
+        not_done_mask = 1. - tf.cast(self.done_mask, tf.float32)
         # original implementation:
-        not_done_mask = tf.abs(tf.cast(self.done_mask, tf.float32) - 1)
+        # not_done_mask = tf.abs(tf.cast(self.done_mask, tf.float32) - 1)
 
         # Bellman error
         if self.config.double_q:

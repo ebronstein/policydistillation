@@ -58,8 +58,10 @@ if __name__ == '__main__':
     #         teacher_config.eps_end, teacher_config.eps_nsteps)
 
     # learning rate schedule
-    lr_schedule  = LinearSchedule(teacher_config.lr_begin, teacher_config.lr_end,
-            teacher_config.lr_nsteps)
+    lr_schedule  = PiecewiseSchedule(teacher_config.lr_endpoints, 
+            teacher_config.lr_outside_value)
+    # lr_schedule  = LinearSchedule(teacher_config.lr_begin, teacher_config.lr_end,
+    #         teacher_config.lr_nsteps)
 
     pdb.set_trace()
 
