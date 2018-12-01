@@ -30,7 +30,7 @@ class BaseConfig():
                 (1e6, 0.1), 
                 (self.num_iterations / 2, 0.01)
                 ]
-        exp_outside_value = 0.01
+        self.exp_outside_value = 0.01
 
     def get_config(self):
         params = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
