@@ -44,7 +44,7 @@ class Linear(DQN):
 
         if self.student:
             self.teacher_q = tf.placeholder(tf.float32,
-                shape=(self.num_teachers, None, num_actions))
+                shape=(None, num_actions))
 
 
     def get_q_values_op(self, state, scope, reuse=False):
