@@ -1,6 +1,6 @@
 set -eux
 
-TEACHER_CHECKPOINT_DIR="PongNoFrameskip-v4_greyscale_huber_teacher/teacher_PongNoFrameskip-v4_greyscale_huber_teacher/model.weights/"
+TEACHER_CHECKPOINT_DIR="results/PongNoFrameskip-v4_greyscale_huber_teacher/teacher_PongNoFrameskip-v4_greyscale_huber_teacher/model.weights/"
 TEACHER_NAME="PongNoFrameskip_v4_greyscale_huber"
 
 ## Softmax sharpening

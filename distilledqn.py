@@ -83,7 +83,8 @@ class DistilledQN(NatureQN):
         ##############################
 
         # Preprocessing teacher Q values
-
+        teacher_q = self.teacher_q
+        
         if self.config.process_teacher_q == 'softmax_tau':
             # Divide the teacher Q values by tau, which will result in a softmax
             # of a different temperature when a softmax is applied.
