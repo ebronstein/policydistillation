@@ -200,7 +200,7 @@ class DQN(QN):
         return np.argmax(action_values), action_values
 
 
-    def update_step(self, t, replay_buffer, lr):
+    def update_step(self, t, replay_buffer, lr, choose_teacher_strategy=None):
         """
         Performs an update of parameters by sampling from replay_buffer
 
@@ -240,12 +240,25 @@ class DQN(QN):
         }
 
         if self.student:
-            teacher_q_vals_list = []
-            for teachermodel in self.teachermodels:
-                teacher_q_vals = teachermodel.sess.run([teachermodel.q], 
+            # Choose which teacher's Q values to learn from
+            if choose_teacher_strategy is not None:
+                teacher_idx = choose_teacher_strategy.choose_teacher()
+            else:
+                # there can only be one teacher if there is no strategy to choose the strategy
+                assert self.num_teachers == 1
+                teacher_idx = 0
+            teachermodel = self.teachermodels[teacher_idx]
+            teacher_q = teachermodel.sess.run([teachermodel.q], 
                     feed_dict={teachermodel.s: s_batch})[0]
-                teacher_q_vals_list.append(teacher_q_vals)
-            fd[self.teacher_q] = teacher_q_vals_list
+            fd[self.teacher_q] = teacher_q
+
+            # teacher_q_vals_list = []
+            # for teachermodel in self.teachermodels:
+            #     teacher_q_vals = teachermodel.sess.run([teachermodel.q], 
+            #         feed_dict={teachermodel.s: s_batch})[0]
+            #     teacher_q_vals_list.append(teacher_q_vals)
+            # fd[self.teacher_q] = teacher_q_vals_list
+
             # self.teacher_q_idx += 1
 
         loss_eval, grad_norm_eval, summary, _ = self.sess.run([self.loss, self.grad_norm, 

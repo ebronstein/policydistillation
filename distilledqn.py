@@ -64,21 +64,21 @@ class DistilledQN(NatureQN):
         ##############################
 
         # Choosing the teacher Q values
-        if self.config.choose_teacher_q == 'mean':
-            teacher_q = tf.reduce_mean(self.teacher_q, axis=0)
-        # choose a teacher randomly
-        elif self.config.choose_teacher_q == 'random':
-            random_idx = tf.random_uniform((), minval=0, 
-                maxval=self.num_teachers, dtype=tf.int32)
-            teacher_q = self.teacher_q[random_idx]
-        # no choice
-        elif self.config.choose_teacher_q == 'none':
-            assert self.num_teachers == 1 # only applicable when there is one teacher
-            teacher_q = self.teacher_q[0]
-        else:
-            print('"{0}" is not a valid way to choose the teacher Q values'.format(
-                    self.config.choose_teacher_q))
-            sys.exit()
+        # if self.config.choose_teacher_q == 'mean':
+        #     teacher_q = tf.reduce_mean(self.teacher_q, axis=0)
+        # # choose a teacher randomly
+        # elif self.config.choose_teacher_q == 'random':
+        #     random_idx = tf.random_uniform((), minval=0, 
+        #         maxval=self.num_teachers, dtype=tf.int32)
+        #     teacher_q = self.teacher_q[random_idx]
+        # # no choice
+        # elif self.config.choose_teacher_q == 'none':
+        #     assert self.num_teachers == 1 # only applicable when there is one teacher
+        #     teacher_q = self.teacher_q[0]
+        # else:
+        #     print('"{0}" is not a valid way to choose the teacher Q values'.format(
+        #             self.config.choose_teacher_q))
+        #     sys.exit()
 
         ##############################
 

@@ -158,7 +158,7 @@ class QN(object):
             self.eval_reward = scores_eval[-1]
 
 
-    def train(self, exp_schedule, lr_schedule):
+    def train(self, exp_schedule, lr_schedule, choose_teacher_strategy=None):
         """
         Performs training of Q
 
@@ -219,11 +219,21 @@ class QN(object):
                     self.update_averages(rewards, max_q_values, q_values, scores_eval)
                     exp_schedule.update(t)
                     lr_schedule.update(t)
+                    if choose_teacher_strategy is not None:
+                        choose_teacher_strategy.update(t)
                     if len(rewards) > 0:
-                        prog.update(t + 1, exact=[("Loss", loss_eval), ("Avg R", self.avg_reward), 
-                                        ("Max R", np.max(rewards)), ("eps", exp_schedule.epsilon), 
-                                        ("Grads", grad_eval), ("Max Q", self.max_q), 
-                                        ("lr", lr_schedule.epsilon)])
+                        exact = [
+                                ("Loss", loss_eval), 
+                                ("Avg R", self.avg_reward), 
+                                ("Max R", np.max(rewards)), 
+                                ("eps", exp_schedule.epsilon), 
+                                ("Grads", grad_eval), 
+                                ("Max Q", self.max_q), 
+                                ("lr", lr_schedule.epsilon)
+                                ]
+                        if choose_teacher_strategy is not None:
+                            exact.append(("Choose teacher eps", choose_teacher_strategy.eps_schedule.epsilon))
+                        prog.update(t + 1, exact=exact)
 
                 elif (t < self.config.learning_start) and (t % self.config.log_freq == 0):
                     sys.stdout.write("\rPopulating the memory {}/{}...".format(t, 
@@ -352,13 +362,15 @@ class QN(object):
         self.evaluate(env, 1)
 
 
-    def run(self, exp_schedule, lr_schedule):
+    def run(self, exp_schedule, lr_schedule, choose_teacher_strategy=None):
         """
         Apply procedures of training for a QN
 
         Args:
             exp_schedule: exploration strategy for epsilon
             lr_schedule: schedule for learning rate
+            choose_teacher_strategy: strategy for choosing the teacher to learn
+                from. Only applicable for the student
         """
         # initialize
         self.initialize()
@@ -368,7 +380,7 @@ class QN(object):
             self.record()
 
         # model
-        self.train(exp_schedule, lr_schedule)
+        self.train(exp_schedule, lr_schedule, choose_teacher_strategy)
 
         # record one game at the end
         if self.config.record:

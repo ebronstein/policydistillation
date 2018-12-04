@@ -28,9 +28,14 @@ class BaseConfig():
         self.exp_endpoints = [
                 (0, 1.0), 
                 (1e6, 0.1), 
-                (self.num_iterations / 2, 0.01)
+                (max(1e6, self.num_iterations / 2), 0.01)
                 ]
         self.exp_outside_value = 0.01
+
+        # teacher choice
+        teacher_choice_eps_begin = 1.0
+        teacher_choice_eps_end = 0.01
+        teacher_choice_eps_nsteps = int(self.num_iterations / 2)
 
     def get_config(self):
         params = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
@@ -191,7 +196,7 @@ class PongNoFrameskip_v4_config_teacher(TeacherBaseConfig):
     # env config
     render_train     = False
     render_test      = False
-    env_name         = "Pong-v0"
+    env_name         = "PongNoFrameskip-v4"
     overwrite_render = True
     record           = False
     high             = 255.
@@ -220,6 +225,61 @@ class PongNoFrameskip_v4_config_teacher(TeacherBaseConfig):
     learning_freq      = 4
     state_history      = 4
     skip_frame         = 4
+    # learning rate
+    # lr_begin           = 0.0001 # original implementation: 0.00025, Berkeley implementation: 1e-4
+    # lr_end             = 0.00005
+    # exploration
+    # eps_begin          = 1
+    # eps_end            = 0.1
+    # eps_nsteps         = self.nsteps_train/2
+
+    learning_start     = 50000
+
+class PongNoFrameskip_v4_config_student(StudentBaseConfig):
+    # env config
+    render_train     = False
+    render_test      = False
+    env_name         = "PongNoFrameskip-v4"
+    overwrite_render = True
+    record           = False
+    high             = 255.
+
+    # processing
+    preprocess_state = 'greyscale'
+    # process teacher Q values with the given method
+    process_teacher_q = 'softmax'
+    # choose the teacher Q values at each iteration with the given method
+    choose_teacher_q = 'mean'
+    # tau value for softmax_teacher_q to sharpen (tau < 1) or soften (tau > 1)
+    # the teacher Q values
+    softmax_teacher_q_tau = 0.01
+
+    # student training
+    student_loss = 'kl' # student loss when training on teacher Q values
+    mse_prob_loss_weight = 1. # weight associated with the MSE over action probabilities loss
+    nll_loss_weight = 1. # weight associated with the NLL over Q values/action probabilities loss
+
+    # model and training config
+    num_episodes_test = 50
+    grad_clip         = True
+    clip_val          = 10
+    saving_freq       = 250000
+    log_freq          = 50
+    eval_freq         = 250000
+    record_freq       = 250000
+    soft_epsilon      = 0.05
+
+    # nature paper hyper params
+    q_values_model = 'nature_cnn'
+    double_q           = True
+    batch_size         = 32
+    buffer_size        = 1000000
+    target_update_freq = 10000
+    gamma              = 0.99
+    learning_freq      = 4
+    state_history      = 4
+    skip_frame         = 4
+    
     # learning rate
     # lr_begin           = 0.0001 # original implementation: 0.00025, Berkeley implementation: 1e-4
     # lr_end             = 0.00005

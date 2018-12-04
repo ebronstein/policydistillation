@@ -6,8 +6,9 @@ import gym
 from utils.preprocess import greyscale
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
-from schedule import LinearExploration, LinearSchedule
+from schedule import LinearExploration, LinearSchedule, PiecewiseExploration, PiecewiseSchedule
 from distilledqn import DistilledQN
+from teacher_choice import EpsilonGreedyBandit
 
 import config
 
@@ -37,7 +38,8 @@ if __name__ == '__main__':
         help='The loss the student uses to learn from the teacher\'s Q values.')
     parser.add_argument('process_teacher_q', choices=['none', 'softmax_tau'],
         help='How to process the teacher Q values for the student loss.')
-    parser.add_argument('choose_teacher_q', choices=['none', 'mean', 'random'],
+    parser.add_argument('choose_teacher_q', 
+        choices=['none', 'mean', 'eps_greedy_bandit'],
         help='How to choose the teacher Q values for the student loss at each iteration.')
     parser.add_argument('-tcd', '--teacher_checkpoint_dirs', nargs='+', type=str, 
             help='Paths to teachers\' checkpoint files (in same order as their names).')
@@ -88,13 +90,29 @@ if __name__ == '__main__':
                         overwrite_render=student_config.overwrite_render)
 
     # exploration strategy
-    exp_schedule = LinearExploration(env, student_config.eps_begin, 
-            student_config.eps_end, student_config.eps_nsteps)
+    exp_schedule = PiecewiseExploration(env, student_config.exp_endpoints, 
+            outside_value=student_config.exp_outside_value)
+    # exp_schedule = LinearExploration(env, student_config.eps_begin, 
+    #         student_config.eps_end, student_config.eps_nsteps)
 
     # learning rate schedule
-    lr_schedule  = LinearSchedule(student_config.lr_begin, student_config.lr_end,
-            student_config.lr_nsteps)
+    lr_schedule  = PiecewiseSchedule(student_config.lr_endpoints, 
+            outside_value=student_config.lr_outside_value)
+    # lr_schedule  = LinearSchedule(student_config.lr_begin, student_config.lr_end,
+    #         student_config.lr_nsteps)
+
+    # teacher choice strategy
+    if args.choose_teacher_q == 'eps_greedy_bandit':
+        eps_schedule = LinearSchedule(student_config.teacher_choice_eps_begin, 
+                student_config.teacher_choice_eps_end,
+                student_config.teacher_choice_eps_nsteps)
+        num_teachers = len(args.teacher_checkpoint_dirs)
+        choose_teacher_strategy = EpsilonGreedyBandit(num_teachers, eps_schedule)
+    elif args.choose_teacher_q == 'none':
+        choose_teacher_strategy = None
+    else:
+        raise NotImplementedError
 
     # train model
     model = DistilledQN(env, student_config)
-    model.run(exp_schedule, lr_schedule)
+    model.run(exp_schedule, lr_schedule, choose_teacher_strategy)
