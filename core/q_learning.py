@@ -220,7 +220,7 @@ class QN(object):
                     exp_schedule.update(t)
                     lr_schedule.update(t)
                     if choose_teacher_strategy is not None:
-                        choose_teacher_strategy.update(t)
+                        choose_teacher_strategy.eps_schedule.update(t)
                     if len(rewards) > 0:
                         exact = [
                                 ("Loss", loss_eval), 
