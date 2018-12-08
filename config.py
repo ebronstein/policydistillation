@@ -33,9 +33,9 @@ class BaseConfig():
         self.exp_outside_value = 0.01
 
         # teacher choice
-        teacher_choice_eps_begin = 1.0
-        teacher_choice_eps_end = 0.01
-        teacher_choice_eps_nsteps = int(self.num_iterations / 2)
+        self.teacher_choice_eps_begin = 1.0
+        self.teacher_choice_eps_end = 0.01
+        self.teacher_choice_eps_nsteps = int(self.num_iterations / 2)
 
     def get_config(self):
         params = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
