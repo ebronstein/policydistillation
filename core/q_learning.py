@@ -222,7 +222,7 @@ class QN(object):
                     exp_schedule.update(t)
                     lr_schedule.update(t)
                     if choose_teacher_strategy is not None:
-                        choose_teacher_strategy.eps_schedule.update(t)
+                        choose_teacher_strategy.update(t)
                     if len(rewards) > 0:
                         exact = [
                                 ("Loss", loss_eval), 
@@ -233,7 +233,7 @@ class QN(object):
                                 ("Max Q", self.max_q), 
                                 ("lr", lr_schedule.epsilon)
                                 ]
-                        if choose_teacher_strategy is not None:
+                        if choose_teacher_strategy is not None and hasattr(choose_teacher_strategy, 'eps_schedule'):
                             exact.append(("Choose teacher eps", choose_teacher_strategy.eps_schedule.epsilon))
                         prog.update(t + 1, exact=exact)
 

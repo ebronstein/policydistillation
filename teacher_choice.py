@@ -8,11 +8,13 @@ class TeacherChoice(object):
         self.num_times_chosen[teacher] += 1
         self.prev_chosen_teacher = teacher
 
+    def update_schedule(self, t):
+        """Update the epsilon schedule."""
+        pass
+
 class NonContextualBandit(TeacherChoice):
-    def __init__(self, num_teachers, eps_schedule):
+    def __init__(self, num_teachers):
         self.num_teachers = num_teachers
-        # schedule for epsilon in choosing teacher
-        self.eps_schedule = eps_schedule
         # number of times each teacher was chosen
         self.num_times_chosen = np.zeros(num_teachers)
         # list of rewards received after learning from each teacher
@@ -24,10 +26,13 @@ class RandomBandit(NonContextualBandit):
     def choose_teacher(self):
         """Choose a teacher uniformly at random."""
         teacher = np.random.choice(self.num_teachers)
-        self.update_chosen_teacher()
+        self.update_chosen_teacher(teacher)
         return teacher
         
 class EpsilonGreedyBandit(NonContextualBandit):
+    def __init__(self, num_teachers, eps_schedule):
+        super(NonContextualBandit, self).__init__(num_teachers)
+        self.eps_schedule = eps_schedule
 
     def update_schedule(self, t):
         self.eps_schedule.update(t)
@@ -44,7 +49,7 @@ class EpsilonGreedyBandit(NonContextualBandit):
         else:
             teacher = self.max_reward_teacher()
         
-        self.update_chosen_teacher()
+        self.update_chosen_teacher(teacher)
         return teacher
 
     # def store_teacher_rewards(self, reward):
