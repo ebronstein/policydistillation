@@ -1,6 +1,7 @@
 import argparse
 import pdb
 import time
+import sys
 
 import gym
 from utils.preprocess import greyscale
@@ -45,6 +46,12 @@ if __name__ == '__main__':
             help='Paths to teachers\' checkpoint files (in same order as their names).')
     parser.add_argument('-tcn', '--teacher_checkpoint_names', nargs='+', type=str, 
             help='Names of the teacher models (in same order as their checkpoint files).')
+    parser.add_argument('-tqns', '--teacher_q_network_sizes', type=str, nargs='+',
+        choices=['large', 'small'], default='large',
+        help='The sizes of the teachers\' Q networks.')
+    parser.add_argument('-sqns', '--student_q_network_size', type=str, nargs=1,
+        choices=['large', 'small'], default='small',
+        help='The size of the student Q network.')
     parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
         help='Value of tau in softmax for processing teacher Q values.')
     parser.add_argument('-wmse', '--mse_prob_loss_weight', type=float, default=1.,
@@ -58,6 +65,7 @@ if __name__ == '__main__':
 
     # assertions
     assert len(args.teacher_checkpoint_dirs) == len(args.teacher_checkpoint_names)
+    assert len(args.teacher_q_network_sizes) == len(args.teacher_checkpoint_names)
 
     # get config
     student_config_class = eval('config.{0}_config_student'.format(
@@ -72,6 +80,26 @@ if __name__ == '__main__':
             args.teacher_checkpoint_names)
     
     # set config variables from command-line arguments
+    teacher_q_network_sizes = []
+    for s in args.teacher_q_network_sizes:
+        if s == 'large':
+            teacher_q_network_sizes.append((32, 64, 64, 512))
+        elif s == 'small':
+            teacher_q_network_sizes.append((16, 16, 16, 128))
+        else:
+            print('"{0}" is not a valid teacher Q network size.'.format(s))
+            sys.exit()
+    student_config.teacher_q_network_sizes = teacher_q_network_sizes
+
+    if args.student_q_network_size == 'large':
+        student_q_network_size = (32, 64, 64, 512)
+    elif args.student_q_network_size == 'small':
+        student_q_network_size = (16, 16, 16, 128)
+    else:
+        print('"{0}" is not a valid student Q network size.'.format(args.student_q_network_size))
+        sys.exit()
+    student_config.student_q_network_size = student_q_network_size
+    
     student_config.student_loss = args.student_loss
     student_config.process_teacher_q = args.process_teacher_q
     student_config.choose_teacher_q = args.choose_teacher_q

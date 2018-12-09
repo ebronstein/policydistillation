@@ -26,15 +26,43 @@ def initialize_teacher(session, model, train_dir, seed=42):
     
     teacher_tensors = chkp.print_tensors_in_checkpoint_file(train_dir, 
             tensor_name='', all_tensors=True)
+
+    filter_str = model.parent_scope
+    if filter_str.startswith('student_'):
+        filter_str = filter_str[len('student_'):]
+    if filter_str.startswith('teacher_'):
+        filter_str = filter_str[len('teacher_'):]
+    # Only filter if the filtering string is applicable
+    if any([filter_str in tt for tt in teacher_tensors.keys()]):
+        filtered_teacher_tensors = {t: v for t, v in teacher_tensors.items() if t.startswith(filter_str)}
+    else:
+        filtered_teacher_tensors = teacher_tensors
+
+    # Check if all of the teacher's tensor have names with the same prefix.
+    prefixes = [t.split('/')[0] for t in filtered_teacher_tensors.keys()]
+    if all([p == prefixes[0] for p in prefixes]):
+        common_prefix_len = len(prefixes[0]) + 1
+        # # Remove the prefix to properly access the student's associated tensors.
+        # renamed_teacher_tensors = {}
+        # prefix_len = len(prefixes[0]) + 1
+        # for key, value in filtered_teacher_tensors.items():
+        #     renamed_teacher_tensors[key[prefix_len:]] = value
+    else:
+        common_prefix_len = 0
+        # renamed_teacher_tensors = filtered_teacher_tensors
     
+
     teacher_student_tensors = {}
     for teacher_tensor in teacher_tensors.keys():
+        # if the teacher was previously a student, rename 'q1' to 'q0'
+        renamed_teacher_tensor = teacher_tensor[common_prefix_len:].replace('q1', 'q0')
         try:
             with tf.variable_scope(model.parent_scope, reuse=True): 
-                student_tensor = tf.get_variable(teacher_tensor)
+                student_tensor = tf.get_variable(renamed_teacher_tensor)
             teacher_student_tensors[teacher_tensor] = student_tensor
         except Exception as e:
             print(e)
+    
 
     model.saver = tf.train.Saver(teacher_student_tensors)
     
@@ -44,11 +72,16 @@ def initialize_teacher(session, model, train_dir, seed=42):
 class DistilledQN(NatureQN):
     def __init__(self, env, config, logger=None, student=True):
         self.teachermodels = []
-        for teacher_checkpoint_name, teacher_checkpoint_dir in zip(
-                config.teacher_checkpoint_names, config.teacher_checkpoint_dirs):
+        for teacher_checkpoint_name, teacher_checkpoint_dir, teacher_q_network_size in zip(
+                    config.teacher_checkpoint_names, 
+                    config.teacher_checkpoint_dirs, 
+                    config.teacher_q_network_sizes):
             parent_scope = teacher_checkpoint_name
+
+            print('Initializing teacher:', teacher_checkpoint_name)
+
             with tf.variable_scope(parent_scope, reuse=False):
-                teachermodel = NatureQN(env, config, parent_scope)
+                teachermodel = NatureQN(env, config, parent_scope, q_network_sizes=teacher_q_network_size)
                 teachermodel.initialize_basic()
             initialize_teacher(teachermodel.sess, teachermodel, 
                                teacher_checkpoint_dir)
@@ -57,7 +90,9 @@ class DistilledQN(NatureQN):
         student_parent_scope = config.exp_name
         with tf.variable_scope(student_parent_scope, reuse=False):
             super(DistilledQN, self).__init__(
-                env, config, student_parent_scope, logger=logger, student=student)
+                    env, config, student_parent_scope, 
+                    q_network_sizes=config.student_q_network_size, logger=logger, 
+                    student=student)
         
     def add_loss_op(self, q, target_q):
 

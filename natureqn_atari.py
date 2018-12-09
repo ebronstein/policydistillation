@@ -34,6 +34,9 @@ if __name__ == '__main__':
     parser.add_argument('exp_name', type=str, help='Experiment name.')
     parser.add_argument('-nt', '--nsteps_train', type=int, default=5000000,
         help='Number of timesteps to train for.')
+    parser.add_argument('-qns', '--q_network_sizes', type=int, nargs=4,
+        default=[32, 64, 64, 512],
+        help='The size of the Q network.')
     args = parser.parse_args()
 
     # get config
@@ -64,5 +67,6 @@ if __name__ == '__main__':
     #         teacher_config.lr_nsteps)
 
     # train model
-    model = NatureQN(env, teacher_config, parent_scope=None) # use experiment name for the scope
+    model = NatureQN(env, teacher_config, parent_scope=args.exp_name, 
+            q_network_size=args.q_network_sizes)
     model.run(exp_schedule, lr_schedule)

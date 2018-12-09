@@ -19,7 +19,7 @@ class QN(object):
     """
     Abstract Class for implementing a Q Network
     """
-    def __init__(self, env, config, parent_scope, logger=None, student=False):
+    def __init__(self, env, config, parent_scope, q_network_sizes, logger=None, student=False):
         """
         Initialize Q Network and env
 
@@ -41,6 +41,7 @@ class QN(object):
         self.env = env
         self.student = student
         self.parent_scope = parent_scope
+        self.q_network_sizes = q_network_sizes
 
         # log the config
         self.logger.info('CONFIG VARIABLES:')
@@ -211,7 +212,8 @@ class QN(object):
                 state = new_state
 
                 # perform a training step
-                loss_eval, grad_eval = self.train_step(t, replay_buffer, lr_schedule.epsilon)
+                loss_eval, grad_eval = self.train_step(t, replay_buffer, 
+                        lr_schedule.epsilon, choose_teacher_strategy)
 
                 # logging stuff
                 if ((t > self.config.learning_start) and (t % self.config.log_freq == 0) and
@@ -266,7 +268,7 @@ class QN(object):
         export_plot(scores_eval, "Scores", self.config.plot_output)
 
 
-    def train_step(self, t, replay_buffer, lr):
+    def train_step(self, t, replay_buffer, lr, choose_teacher_strategy=None):
         """
         Perform training step
 
@@ -279,7 +281,8 @@ class QN(object):
 
         # perform training step
         if (t > self.config.learning_start and t % self.config.learning_freq == 0):
-            loss_eval, grad_eval = self.update_step(t, replay_buffer, lr)
+            loss_eval, grad_eval = self.update_step(t, replay_buffer, lr, 
+                    choose_teacher_strategy)
 
         # occasionaly update target network with q network
         if t % self.config.target_update_freq == 0:

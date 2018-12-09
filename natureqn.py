@@ -28,7 +28,8 @@ class NatureQN(Linear):
         out = state
 
         # compress the student network
-        size1, size2, size3, size4 = (16, 16, 16, 128) if self.student else (32, 64, 64, 512)
+        size1, size2, size3, size4 = self.q_network_sizes
+        # size1, size2, size3, size4 = (16, 16, 16, 128) if self.student else (32, 64, 64, 512)
 
         # Berkeley Deep RL implementation
         with tf.variable_scope(scope, reuse=reuse):
