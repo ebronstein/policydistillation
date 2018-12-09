@@ -130,11 +130,11 @@ if __name__ == '__main__':
     #         student_config.lr_nsteps)
 
     # teacher choice strategy
+    num_teachers = len(args.teacher_checkpoint_dirs)
     if args.choose_teacher_q in ['eps_greedy_bandit']:
         eps_schedule = LinearSchedule(student_config.teacher_choice_eps_begin, 
                 student_config.teacher_choice_eps_end,
                 student_config.teacher_choice_eps_nsteps)
-        num_teachers = len(args.teacher_checkpoint_dirs)
     
     if args.choose_teacher_q == 'random_bandit':
         choose_teacher_strategy = RandomBandit(num_teachers)
