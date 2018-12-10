@@ -211,6 +211,9 @@ class QN(object):
                 replay_buffer.store_effect(idx, action, reward, done)
                 state = new_state
 
+                # store the reward with the teacher choice strategy
+                choose_teacher_strategy.store_reward(reward, q_input)
+
                 # perform a training step
                 loss_eval, grad_eval = self.train_step(t, replay_buffer, 
                         lr_schedule.epsilon, choose_teacher_strategy)
@@ -236,6 +239,12 @@ class QN(object):
                         if choose_teacher_strategy is not None and hasattr(choose_teacher_strategy, 'eps_schedule'):
                             exact.append(("Choose teacher eps", choose_teacher_strategy.eps_schedule.epsilon))
                         prog.update(t + 1, exact=exact)
+
+                elif ((t > self.config.learning_start) and 
+                        (t % self.config.save_teacher_choice_freq == 0) and 
+                        (choose_teacher_strategy is not None)):
+                    choose_teacher_strategy.save(self.config.teacher_choice_output_path)
+
 
                 elif (t < self.config.learning_start) and (t % self.config.log_freq == 0):
                     sys.stdout.write("\rPopulating the memory {}/{}...".format(t, 
@@ -266,6 +275,8 @@ class QN(object):
         self.save()
         scores_eval += [self.evaluate()]
         export_plot(scores_eval, "Scores", self.config.plot_output)
+        if choose_teacher_strategy is not None:
+            choose_teacher_strategy.save(self.config.teacher_choice_output_path)
 
 
     def train_step(self, t, replay_buffer, lr, choose_teacher_strategy=None):

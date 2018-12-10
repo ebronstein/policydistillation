@@ -6,6 +6,7 @@ class BaseConfig():
         self.log_path     = self.output_path + "log.txt"
         self.plot_output  = self.output_path + "scores.png"
         self.record_path  = self.output_path + "monitor/"
+        self.teacher_choice_output_path  = self.output_path + "teacher_choice.pkl"
 
         # experiment config
         self.env_name = env_name
@@ -32,10 +33,6 @@ class BaseConfig():
                 ]
         self.exp_outside_value = 0.01
 
-        # teacher choice
-        self.teacher_choice_eps_begin = 1.0
-        self.teacher_choice_eps_end = 0.01
-        self.teacher_choice_eps_nsteps = int(self.num_iterations / 2)
 
     def get_config(self):
         params = [attr for attr in dir(self) if not callable(getattr(self, attr)) and not attr.startswith("__")]
@@ -55,6 +52,14 @@ class StudentBaseConfig(BaseConfig):
         BaseConfig.__init__(self, env_name, exp_name, output_path, nsteps_train)
         self.teacher_checkpoint_dirs = teacher_checkpoint_dirs
         self.teacher_checkpoint_names = teacher_checkpoint_names
+
+        # teacher choice
+        self.teacher_choice_eps_begin = 1.0
+        self.teacher_choice_eps_end = 0.01
+        self.teacher_choice_eps_nsteps = int(self.num_iterations / 2)
+        self.teacher_choice_bandit_alpha_begin = 1. / len(teacher_checkpoint_dirs)
+        self.teacher_choice_bandit_alpha_end = 1. / len(teacher_checkpoint_dirs)
+        self.teacher_choice_bandit_alpha_nsteps = int(self.num_iterations / 2)
 
     # student/teacher config
     student = True
@@ -118,6 +123,8 @@ class Pong_v0_config_teacher(TeacherBaseConfig):
     clip_val          = 10
     saving_freq       = 250000
     log_freq          = 50
+    save_teacher_choice_freq = 10000
+    save_teacher_choice_freq = 10000
     eval_freq         = 250000
     record_freq       = 250000
     soft_epsilon      = 0.05
@@ -170,6 +177,7 @@ class Pong_v0_config_student(StudentBaseConfig):
     clip_val          = 10
     saving_freq       = 250000
     log_freq          = 50
+    save_teacher_choice_freq = 10000
     eval_freq         = 250000
     record_freq       = 250000
     soft_epsilon      = 0.05
@@ -210,6 +218,7 @@ class PongNoFrameskip_v4_config_teacher(TeacherBaseConfig):
     clip_val          = 10
     saving_freq       = 250000
     log_freq          = 50
+    save_teacher_choice_freq = 10000
     eval_freq         = 250000
     record_freq       = 250000
     soft_epsilon      = 0.05
@@ -265,6 +274,7 @@ class PongNoFrameskip_v4_config_student(StudentBaseConfig):
     clip_val          = 10
     saving_freq       = 250000
     log_freq          = 50
+    save_teacher_choice_freq = 10000
     eval_freq         = 250000
     record_freq       = 250000
     soft_epsilon      = 0.05

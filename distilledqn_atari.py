@@ -9,7 +9,7 @@ from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
 from schedule import LinearExploration, LinearSchedule, PiecewiseExploration, PiecewiseSchedule
 from distilledqn import DistilledQN
-from teacher_choice import RandomBandit, EpsilonGreedyBandit
+from teacher_choice import RandomBandit, EpsilonGreedyBandit, VDBEBandit
 
 import config
 
@@ -32,6 +32,8 @@ address-ip-of-the-server:6006
 if __name__ == '__main__':
     # parse arguments
     parser = argparse.ArgumentParser()
+
+    # required arguments
     parser.add_argument('env_name', type=str, help='Environment.')
     parser.add_argument('exp_name', type=str, help='Experiment name.')
     parser.add_argument('student_loss', type=str, 
@@ -40,8 +42,10 @@ if __name__ == '__main__':
     parser.add_argument('process_teacher_q', choices=['none', 'softmax_tau'],
         help='How to process the teacher Q values for the student loss.')
     parser.add_argument('choose_teacher_q', 
-        choices=['none', 'mean', 'random_bandit', 'eps_greedy_bandit'],
+        choices=['none', 'random_bandit', 'eps_greedy_bandit', 'vdbe_bandit'],
         help='How to choose the teacher Q values for the student loss at each iteration.')
+    
+    # teacher specification
     parser.add_argument('-tcd', '--teacher_checkpoint_dirs', nargs='+', type=str, 
             help='Paths to teachers\' checkpoint files (in same order as their names).')
     parser.add_argument('-tcn', '--teacher_checkpoint_names', nargs='+', type=str, 
@@ -49,17 +53,33 @@ if __name__ == '__main__':
     parser.add_argument('-tqns', '--teacher_q_network_sizes', type=str, nargs='+',
         choices=['large', 'small'], default='large',
         help='The sizes of the teachers\' Q networks.')
+    
+    # student network
     parser.add_argument('-sqns', '--student_q_network_size', type=str, nargs=1,
         choices=['large', 'small'], default='small',
         help='The size of the student Q network.')
+    
+    # process teacher Q values
     parser.add_argument('-stqt', '--softmax_teacher_q_tau', type=float, default=0.01,
         help='Value of tau in softmax for processing teacher Q values.')
+    
+    # student loss
     parser.add_argument('-wmse', '--mse_prob_loss_weight', type=float, default=1.,
         help='Weight associated with the student loss of MSE over action probabilities.')
     parser.add_argument('-wnll', '--nll_loss_weight', type=float, default=1.,
         help='Weight associated with the student loss of NLL over Q values or action probabilities.')
     parser.add_argument('-nt', '--nsteps_train', type=int, default=5000000,
         help='Number of timesteps to train for.')
+
+    # teacher choice arguments
+    parser.add_argument('-brm', '--bandit_reward_method', type=str, 
+        choices=['avg_all_time', 'rolling_avg'], default='avg_all_time',
+        help='Value of tau in softmax for processing teacher Q values.')
+    parser.add_argument('-vdbe_is', '--vdbe_inv_sensitivity', type=float, default=0.33,
+        help='Value of inverse sensitity parameter in VDBE Bandit algorithm.')
+    # just use 'auto' for delta (see teacher_choice.py)
+    # parser.add_argument('-vdbe_d', '--vdbe_delta', type=float, default=0.01,
+    #     help='Value of delta in VDBE Bandit algorithm.')
 
     args = parser.parse_args()
 
@@ -135,11 +155,25 @@ if __name__ == '__main__':
         eps_schedule = LinearSchedule(student_config.teacher_choice_eps_begin, 
                 student_config.teacher_choice_eps_end,
                 student_config.teacher_choice_eps_nsteps)
+    if args.bandit_reward_method == 'rolling_avg':
+        bandit_alpha_schedule = LinearSchedule(
+                student_config.teacher_choice_bandit_alpha_begin, 
+                student_config.teacher_choice_bandit_alpha_end,
+                student_config.teacher_choice_bandit_alpha_nsteps)
+    elif args.bandit_reward_method == 'avg_all_time':
+        bandit_alpha_schedule = None
     
     if args.choose_teacher_q == 'random_bandit':
-        choose_teacher_strategy = RandomBandit(num_teachers)
+        choose_teacher_strategy = RandomBandit(
+                num_teachers, args.bandit_reward_method, bandit_alpha_schedule)
     elif args.choose_teacher_q == 'eps_greedy_bandit':
-        choose_teacher_strategy = EpsilonGreedyBandit(num_teachers, eps_schedule)
+        choose_teacher_strategy = EpsilonGreedyBandit(num_teachers, 
+                args.bandit_reward_method, bandit_alpha_schedule, eps_schedule)
+    elif args.choose_teacher_q == 'vdbe_bandit':
+        student_config.vdbe_inv_sensitivity = args.vdbe_inv_sensitivity
+        choose_teacher_strategy = VDBEBandit(num_teachers, 
+                args.bandit_reward_method, bandit_alpha_schedule, 
+                args.vdbe_inv_sensitivity)
     elif args.choose_teacher_q == 'none':
         choose_teacher_strategy = None
     else:
