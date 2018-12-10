@@ -54,7 +54,7 @@ class TeacherChoice(object):
 
     def _store_reward(self, reward, context=None):
         self.rewards[self.prev_chosen_teacher].append(reward)
-        if self.self.alpha_schedule is not None:
+        if self.alpha_schedule is not None:
             self.q[self.prev_chosen_teacher] += self.alpha_schedule.epsilon * (reward - self.q[self.prev_chosen_teacher])
 
     def save(self, filename):
@@ -132,7 +132,7 @@ class VDBEBandit(TeacherChoice):
 
         # store reward
         self.rewards[self.prev_chosen_teacher].append(reward)
-        if self.self.alpha_schedule is not None:
+        if self.alpha_schedule is not None:
             self.q[self.prev_chosen_teacher] += self.alpha_schedule.epsilon * (reward - self.q[self.prev_chosen_teacher])
 
         # current reward estimate
