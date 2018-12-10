@@ -9,7 +9,7 @@ from utils.wrappers import PreproWrapper, MaxAndSkipEnv
 
 from schedule import LinearExploration, LinearSchedule, PiecewiseExploration, PiecewiseSchedule
 from distilledqn import DistilledQN
-from teacher_choice import RandomBandit, EpsilonGreedyBandit, VDBEBandit
+from teacher_choice import RandomBandit, EpsilonGreedyBandit, VDBEBandit, UCB1Bandit, BetaBayesianUCBBandit, BetaThompsonSamplingBandit
 
 import config
 
@@ -42,7 +42,8 @@ if __name__ == '__main__':
     parser.add_argument('process_teacher_q', choices=['none', 'softmax_tau'],
         help='How to process the teacher Q values for the student loss.')
     parser.add_argument('choose_teacher_q', 
-        choices=['none', 'random_bandit', 'eps_greedy_bandit', 'vdbe_bandit'],
+        choices=['none', 'random_bandit', 'eps_greedy_bandit', 'vdbe_bandit',
+        'ucb1_bandit', 'beta_bayesian_bandit', 'beta_thompson_sampling_bandit'],
         help='How to choose the teacher Q values for the student loss at each iteration.')
     
     # teacher specification
@@ -80,6 +81,12 @@ if __name__ == '__main__':
     # just use 'auto' for delta (see teacher_choice.py)
     # parser.add_argument('-vdbe_d', '--vdbe_delta', type=float, default=0.01,
     #     help='Value of delta in VDBE Bandit algorithm.')
+    parser.add_argument('-bc', '--beta_c', type=float, default=3,
+        help='Number of standard deviations to use as upper confidence bound for the Beta Bayesian UCB and Thompson Sampling Bandits.')
+    parser.add_argument('-ba', '--beta_a', type=float, default=1,
+        help='Initial value of a for the Beta Bayesian UCB and Thompson Sampling Bandits.')
+    parser.add_argument('-bb', '--beta_b', type=float, default=1,
+        help='Initial value of b for the Beta Bayesian UCB and Thompson Sampling Bandits.')
 
     args = parser.parse_args()
 
@@ -99,7 +106,7 @@ if __name__ == '__main__':
             output_path, args.nsteps_train, args.teacher_checkpoint_dirs, 
             args.teacher_checkpoint_names)
     
-    # set config variables from command-line arguments
+    # set general config variables from command-line arguments
     teacher_q_network_sizes = []
     for s in args.teacher_q_network_sizes:
         if s == 'large':
@@ -128,6 +135,7 @@ if __name__ == '__main__':
     student_config.nll_loss_weight = args.nll_loss_weight
     student_config.nsteps_train = args.nsteps_train
     student_config.lr_nsteps = args.nsteps_train / 2
+    student_config.bandit_reward_method = args.bandit_reward_method
 
     # make env
     env = gym.make(student_config.env_name)
@@ -174,6 +182,23 @@ if __name__ == '__main__':
         choose_teacher_strategy = VDBEBandit(num_teachers, 
                 args.bandit_reward_method, bandit_alpha_schedule, 
                 args.vdbe_inv_sensitivity)
+    elif args.choose_teacher_q == 'ucb1_bandit':
+        choose_teacher_strategy = UCB1Bandit(num_teachers, 
+                args.bandit_reward_method, bandit_alpha_schedule)
+    elif args.choose_teacher_q == 'beta_bayesian_bandit':
+        student_config.beta_c = args.beta_c
+        student_config.beta_init_a = args.beta_a
+        student_config.beta_init_b = args.beta_b
+        choose_teacher_strategy = BetaBayesianUCBBandit(num_teachers, 
+                args.bandit_reward_method, bandit_alpha_schedule,
+                c=args.beta_c, init_a=args.beta_a, init_b=args.beta_b)
+    elif args.choose_teacher_q == 'beta_thompson_sampling_bandit':
+        student_config.beta_c = args.beta_c
+        student_config.beta_init_a = args.beta_a
+        student_config.beta_init_b = args.beta_b
+        choose_teacher_strategy = BetaThompsonSamplingBandit(num_teachers, 
+                args.bandit_reward_method, bandit_alpha_schedule,
+                c=args.beta_c, init_a=args.beta_a, init_b=args.beta_b)
     elif args.choose_teacher_q == 'none':
         choose_teacher_strategy = None
     else:
