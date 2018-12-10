@@ -1,6 +1,7 @@
 import pickle
 
 import numpy as np
+from scipy.stats import beta
 
 class TeacherChoice(object):
     def __init__(self, num_teachers, reward_method, alpha_schedule):
@@ -167,3 +168,36 @@ class UCB1Bandit(TeacherChoice):
         return np.argmax(q + u)
 
 
+class BetaBayesianUCBBandit(TeacherChoice):
+    def __init__(self, num_teachers, reward_method, alpha_schedule, c=3, init_a=1, init_b=1):
+        super(TeacherChoice, self).__init__(num_teachers, reward_method, alpha_schedule)
+        self.c = c
+        self._as = init_a * np.ones(num_teachers)
+        self._bs = init_b * np.ones(num_teachers)
+
+    def update_schedule(self, t):
+        # Update alpha schedule
+        if self.alpha_schedule is not None:
+            self.alpha_schedule.update(t)
+
+    def choose_teacher(self):
+        mean = self._as[x] / (self._as[x] + self._bs[x])
+        std_scaled = self.c * beta.std(self._as, self._bs)
+        return np.argmax(mean + std_scaled)
+
+    def _store_reward(self, reward, context=None):
+        """Store the reward and update the Beta distribution parameters."""
+        # store reward
+        self.rewards[self.prev_chosen_teacher].append(reward)
+        if self.alpha_schedule is not None:
+            self.q[self.prev_chosen_teacher] += self.alpha_schedule.epsilon * (reward - self.q[self.prev_chosen_teacher])
+
+        # update Gaussian posterior
+        self._as[self.prev_chosen_teacher] += reward
+        self._bs[self.prev_chosen_teacher] += (1 - reward)
+
+
+class BetaThompsonSamplingBandit(BetaBayesianUCBBandit):
+
+    def choose_teacher(self):
+        return  np.argmax(np.random.beta(self._as, self._bs))
