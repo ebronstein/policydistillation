@@ -58,13 +58,17 @@ class TeacherChoice(object):
         if self.alpha_schedule is not None:
             self.q[self.prev_chosen_teacher] += self.alpha_schedule.epsilon * (reward - self.q[self.prev_chosen_teacher])
 
-    def save(self, filename):
-        data = {
+    def get_basic_data(self):
+        """Return data about the history of TeacherChoice."""
+        return {
             'num_teachers': self.num_teachers,
             'num_times_chosen': self.num_times_chosen,
             'rewards': self.rewards,
             'chosen_teachers': self.chosen_teachers
         }
+        
+    def save(self, filename):
+        data = self.get_basic_data()
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile)
         print('Saved teacher choice data to', filename)
@@ -114,6 +118,7 @@ class VDBEBandit(TeacherChoice):
         if delta == 'auto':
             self.delta = 1. / num_teachers
         self.epsilon = 1.
+        self.epsilon_history = [self.epsilon]
 
     def get_epsilon(self):
         return self.epsilon
@@ -146,6 +151,14 @@ class VDBEBandit(TeacherChoice):
         abs_td_error = abs(curr_q - prev_q)
         f = (1 - np.e**(-abs_td_error / self.inv_sensitivity)) / (1 + np.e**(-abs_td_error / self.inv_sensitivity))
         self.epsilon = self.delta * f + (1. - self.delta) * self.epsilon
+        self.epsilon_history.append(self.epsilon)
+
+    def save(self, filename):
+        data = self.get_basic_data()
+        data['epsilon_history'] = self.epsilon_history
+        with open(filename, 'wb') as outfile:
+            pickle.dump(data, outfile)
+        print('Saved teacher choice data to', filename)
 
 
 class UCB1Bandit(TeacherChoice):
@@ -160,7 +173,8 @@ class UCB1Bandit(TeacherChoice):
         self.t = t
 
     def choose_teacher(self):
-        u = np.sqrt((2. * np.log(self.t) * np.ones(self.num_teachers)) / self.num_times_chosen)
+        # add 1e-6 to avoid mathematical errors
+        u = np.sqrt((2. * np.log(self.t + 1e-6) * np.ones(self.num_teachers)) / (self.num_times_chosen + 1e-6))
         if self.reward_method == 'avg_all_time':
             q = np.array([np.mean(r) for r in self.rewards])
         elif self.reward_method == 'rolling_avg':
@@ -195,6 +209,14 @@ class BetaBayesianUCBBandit(TeacherChoice):
         # update Gaussian posterior
         self._as[self.prev_chosen_teacher] += reward
         self._bs[self.prev_chosen_teacher] += (1 - reward)
+
+    def save(self, filename):
+        data = self.get_basic_data()
+        data['beta_as'] = list(self._as)
+        data['beta_bs'] = list(self._bs)
+        with open(filename, 'wb') as outfile:
+            pickle.dump(data, outfile)
+        print('Saved teacher choice data to', filename)
 
 
 class BetaThompsonSamplingBandit(BetaBayesianUCBBandit):
