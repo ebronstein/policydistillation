@@ -109,7 +109,7 @@ class EpsilonGreedyBandit(TeacherChoice):
 class VDBEBandit(TeacherChoice):
     def __init__(self, num_teachers, reward_method, alpha_schedule, 
             inv_sensitivity, delta='auto'):
-        super(TeacherChoice, self).__init__(num_teachers, reward_method, alpha_schedule)
+        TeacherChoice.__init__(self, num_teachers, reward_method, alpha_schedule)
         self.inv_sensitivity = inv_sensitivity
         if delta == 'auto':
             self.delta = 1. / num_teachers
@@ -150,7 +150,7 @@ class VDBEBandit(TeacherChoice):
 
 class UCB1Bandit(TeacherChoice):
     def __init__(self, num_teachers, reward_method, alpha_schedule):
-        super(TeacherChoice, self).__init__(num_teachers, reward_method, alpha_schedule)
+        TeacherChoice.__init__(self, num_teachers, reward_method, alpha_schedule)
         self.t = 0
 
     def update_schedule(self, t):
@@ -170,7 +170,7 @@ class UCB1Bandit(TeacherChoice):
 
 class BetaBayesianUCBBandit(TeacherChoice):
     def __init__(self, num_teachers, reward_method, alpha_schedule, c=3, init_a=1, init_b=1):
-        super(TeacherChoice, self).__init__(num_teachers, reward_method, alpha_schedule)
+        TeacherChoice.__init__(self, num_teachers, reward_method, alpha_schedule)
         self.c = c
         self._as = init_a * np.ones(num_teachers)
         self._bs = init_b * np.ones(num_teachers)
