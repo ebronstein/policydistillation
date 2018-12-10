@@ -45,7 +45,7 @@ class TeacherChoice(object):
         pass
 
     def store_reward(self, rewards, contexts):
-        if hasattr(rewards, '__iter__') or hasattr(contexts, '__iter__'):
+        if hasattr(rewards, '__iter__'):
             assert len(rewards) == len(contexts)
             for r, c in zip(rewards, contexts):
                 self._store_reward(r, c)
