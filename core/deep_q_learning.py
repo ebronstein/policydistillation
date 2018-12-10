@@ -105,11 +105,12 @@ class DQN(QN):
 
 
     def initialize_basic(self):
+        # create config
+        config=tf.ConfigProto(device_count={'GPU': 3})
+        config.gpu_options.allow_growth = True
+
         # create tf session
-        self.sess = tf.Session(config=tf.ConfigProto(
-            device_count={'GPU': 3}
-            )
-        )
+        self.sess = tf.Session(config=config)
 
         # TODO: add name argument to restore weights to a unique model name
         # ex:
