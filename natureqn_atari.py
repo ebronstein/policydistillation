@@ -34,9 +34,19 @@ if __name__ == '__main__':
     parser.add_argument('exp_name', type=str, help='Experiment name.')
     parser.add_argument('-nt', '--nsteps_train', type=int, default=5000000,
         help='Number of timesteps to train for.')
-    parser.add_argument('-qns', '--q_network_sizes', type=int, nargs=4,
-        default=[32, 64, 64, 512],
+    
+    parser.add_argument('-qns', '--q_network_sizes', type=str,
+        choices=['large', 'small'], default='large',
         help='The size of the Q network.')
+    # parser.add_argument('-qns', '--q_network_sizes', type=int, nargs=4,
+    #     default=[32, 64, 64, 512],
+    #     help='The size of the Q network.')
+
+    # state subspace
+    parser.add_argument('-ss', '--state_subspace', type=str, 
+        choices=['none', 'ball_bottom_half', 'ball_top_half'], default='none',
+        help='The state subspace to restrict this teacher to. If \'none\', then no restrictions.')
+    
     args = parser.parse_args()
 
     # get config
@@ -54,6 +64,22 @@ if __name__ == '__main__':
         env = PreproWrapper(env, prepro=eval(teacher_config.preprocess_state), shape=(80, 80, 1), 
                             overwrite_render=teacher_config.overwrite_render)
 
+    # set config variables
+    if args.q_network_sizes == 'large':
+        q_network_sizes = (32, 64, 64, 512)
+    elif args.q_network_sizes == 'small':
+        q_network_sizes = (16, 16, 16, 128)
+    else:
+        print('"{0}" is not a valid teacher Q network size.'.format(s))
+        sys.exit()
+    teacher_config.q_network_sizes = q_network_sizes
+    
+    if args.state_subspace == 'none':
+        state_subspace = None
+    else:
+        state_subspace = args.state_subspace
+    teacher_config.state_subspace = state_subspace
+
     # exploration strategy
     exp_schedule = PiecewiseExploration(env, teacher_config.exp_endpoints, 
             outside_value=teacher_config.exp_outside_value)
@@ -67,6 +93,8 @@ if __name__ == '__main__':
     #         teacher_config.lr_nsteps)
 
     # train model
-    model = NatureQN(env, teacher_config, parent_scope=args.exp_name, 
-            q_network_size=args.q_network_sizes)
+    parent_scope = None # args.exp_name
+    # with tf.variable_scope(parent_scope, reuse=False):
+    model = NatureQN(env, teacher_config, parent_scope=parent_scope, 
+            q_network_sizes=q_network_sizes)
     model.run(exp_schedule, lr_schedule)

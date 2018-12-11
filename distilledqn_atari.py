@@ -145,6 +145,8 @@ if __name__ == '__main__':
         env = PreproWrapper(env, prepro=greyscale, shape=(80, 80, 1), 
                         overwrite_render=student_config.overwrite_render)
 
+    pdb.set_trace()
+    
     # exploration strategy
     exp_schedule = PiecewiseExploration(env, student_config.exp_endpoints, 
             outside_value=student_config.exp_outside_value)

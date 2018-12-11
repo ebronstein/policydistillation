@@ -14,6 +14,7 @@ from utils.replay_buffer import ReplayBuffer
 from utils.fake_replay_buffer import FakeReplayBuffer
 from utils.preprocess import greyscale
 from utils.wrappers import PreproWrapper, MaxAndSkipEnv
+from utils.pong_detect_ball import ball_half_screen_position
 
 class QN(object):
     """
@@ -187,6 +188,20 @@ class QN(object):
             total_reward = 0
             state = self.env.reset()
             while True:
+                if self.config.state_subspace is not None:
+                    if self.config.state_subspace in ['ball_top_half', 'ball_bottom_half']:
+                        ball_position = ball_half_screen_position(state)
+                        # check if ball is in top half but we're restricted to bottom half
+                        if ball_position == 1 and self.config.state_subspace == 'ball_bottom_half':
+                            print('ball is in top half but we are restricted to bottom half')
+                            continue
+                        # check if ball is in bottom half but we're restricted to top half
+                        elif ball_position == 0 and self.config.state_subspace == 'ball_top_half':
+                            print('ball is in bottom half but we are restricted to top half')
+                            continue
+                    else:
+                        raise NotImplementedError
+
                 t += 1
                 last_eval += 1
                 last_record += 1
