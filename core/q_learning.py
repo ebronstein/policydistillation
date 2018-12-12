@@ -189,19 +189,23 @@ class QN(object):
             state = self.env.reset()
             while True:
                 if self.config.state_subspace is not None:
+                    out_of_bounds = False
                     if self.config.state_subspace in ['ball_top_half', 'ball_bottom_half']:
                         image = self.env.unwrapped._get_obs()
                         ball_position = ball_half_screen_position(image)
                         # check if ball is in top half but we're restricted to bottom half
                         if ball_position == 1 and self.config.state_subspace == 'ball_bottom_half':
                             print('ball is in top half but we are restricted to bottom half')
-                            continue
+                            out_of_bounds = True
                         # check if ball is in bottom half but we're restricted to top half
                         elif ball_position == 0 and self.config.state_subspace == 'ball_top_half':
                             print('ball is in bottom half but we are restricted to top half')
-                            continue
+                            out_of_bounds = True
                     else:
                         raise NotImplementedError
+                    if out_of_bounds: # current state is outside of this agent's state subspace
+                        # perform action in env
+                        state, reward, done, info = self.env.step(action)
 
                 t += 1
                 last_eval += 1
