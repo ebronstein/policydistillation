@@ -6,6 +6,8 @@ import cv2
 
 
 def get_ball_pos(og_image):
+
+    # preprocessing
     top_crop = 35
     bottom_crop = 194
     image = og_image[top_crop:bottom_crop]  # crop
@@ -49,17 +51,34 @@ if __name__ == '__main__':
         if i % 20 == 0:
             og_image = env.unwrapped._get_obs()
 
+            state = np.reshape(og_image, [210, 160, 3]).astype(np.float32)
 
-            pos = ball_half_screen_position(og_image)
-            if pos == 1:
-                print('upper')
-            elif pos == 0:
-                print('lower')
-            else:
-                print('no ball')
+            # grey scale
+            state = state[:, :, 0] * 0.299 + state[:, :, 1] * 0.587 + state[:, :, 2] * 0.114
 
-            plt.imshow(og_image)
-            plt.show()
+            # karpathy
+            state = state[35:195]  # crop
+            state = state[::2,::2] # downsample by factor of 2
+
+            state = state[:, :, np.newaxis]
+
+            state = state.astype(np.uint8)
+
+            pdb.set_trace()
+            # plt.imshow(state)
+            # plt.show()
+
+
+            # pos = ball_half_screen_position(og_image)
+            # if pos == 1:
+            #     print('upper')
+            # elif pos == 0:
+            #     print('lower')
+            # else:
+            #     print('no ball')
+
+            # plt.imshow(og_image)
+            # plt.show()
 
             # print('uncropped')
             # plt.imshow(image)

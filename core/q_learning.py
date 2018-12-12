@@ -190,7 +190,8 @@ class QN(object):
             while True:
                 if self.config.state_subspace is not None:
                     if self.config.state_subspace in ['ball_top_half', 'ball_bottom_half']:
-                        ball_position = ball_half_screen_position(state)
+                        image = self.env.unwrapped._get_obs()
+                        ball_position = ball_half_screen_position(image)
                         # check if ball is in top half but we're restricted to bottom half
                         if ball_position == 1 and self.config.state_subspace == 'ball_bottom_half':
                             print('ball is in top half but we are restricted to bottom half')
@@ -226,8 +227,9 @@ class QN(object):
                 replay_buffer.store_effect(idx, action, reward, done)
                 state = new_state
 
-                # store the reward with the teacher choice strategy
-                choose_teacher_strategy.store_reward(reward, q_input)
+                if choose_teacher_strategy is not None:
+                    # store the reward with the teacher choice strategy
+                    choose_teacher_strategy.store_reward(reward, q_input)
 
                 # perform a training step
                 loss_eval, grad_eval = self.train_step(t, replay_buffer, 
