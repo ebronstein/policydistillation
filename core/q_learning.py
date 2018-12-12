@@ -195,11 +195,9 @@ class QN(object):
                         ball_position = ball_half_screen_position(image)
                         # check if ball is in top half but we're restricted to bottom half
                         if ball_position == 1 and self.config.state_subspace == 'ball_bottom_half':
-                            print('ball is in top half but we are restricted to bottom half')
                             out_of_bounds = True
                         # check if ball is in bottom half but we're restricted to top half
                         elif ball_position == 0 and self.config.state_subspace == 'ball_top_half':
-                            print('ball is in bottom half but we are restricted to top half')
                             out_of_bounds = True
                     else:
                         raise NotImplementedError
